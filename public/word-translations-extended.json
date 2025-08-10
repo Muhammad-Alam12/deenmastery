@@ -1,0 +1,458 @@
+{
+  "الله": {
+    "translation": "Allah",
+    "transliteration": "Allah",
+    "root": "ا-ل-ه",
+    "meaning": "The One and Only God"
+  },
+  "الرحمن": {
+    "translation": "The Most Merciful",
+    "transliteration": "Ar-Rahman",
+    "root": "ر-ح-م",
+    "meaning": "The Beneficent, The Compassionate"
+  },
+  "الرحيم": {
+    "translation": "The Most Compassionate",
+    "transliteration": "Ar-Raheem",
+    "root": "ر-ح-م",
+    "meaning": "The Merciful"
+  },
+  "الحمد": {
+    "translation": "All praise",
+    "transliteration": "Al-Hamd",
+    "root": "ح-م-د",
+    "meaning": "Praise, gratitude"
+  },
+  "رب": {
+    "translation": "Lord",
+    "transliteration": "Rabb",
+    "root": "ر-ب-ب",
+    "meaning": "Lord, Master, Sustainer"
+  },
+  "العالمين": {
+    "translation": "of the worlds",
+    "transliteration": "Al-Alameen",
+    "root": "ع-ل-م",
+    "meaning": "All creation, the universe"
+  },
+  "ملك": {
+    "translation": "King",
+    "transliteration": "Malik",
+    "root": "م-ل-ك",
+    "meaning": "King, Sovereign"
+  },
+  "يوم": {
+    "translation": "Day",
+    "transliteration": "Yawm",
+    "root": "ي-و-م",
+    "meaning": "Day, time period"
+  },
+  "الدين": {
+    "translation": "of Judgment",
+    "transliteration": "Ad-Deen",
+    "root": "د-ي-ن",
+    "meaning": "Religion, way of life, judgment"
+  },
+  "إياك": {
+    "translation": "You alone",
+    "transliteration": "Iyyaka",
+    "root": "ا-ي-ا",
+    "meaning": "You specifically"
+  },
+  "نعبد": {
+    "translation": "we worship",
+    "transliteration": "Na'bud",
+    "root": "ع-ب-د",
+    "meaning": "To worship, serve"
+  },
+  "نستعين": {
+    "translation": "we seek help",
+    "transliteration": "Nasta'een",
+    "root": "ع-و-ن",
+    "meaning": "To seek assistance"
+  },
+  "اهدنا": {
+    "translation": "Guide us",
+    "transliteration": "Ihdeena",
+    "root": "ه-د-ي",
+    "meaning": "To guide, show the way"
+  },
+  "الصراط": {
+    "translation": "the path",
+    "transliteration": "As-Sirat",
+    "root": "ص-ر-ط",
+    "meaning": "Path, way, bridge"
+  },
+  "المستقيم": {
+    "translation": "the straight",
+    "transliteration": "Al-Mustaqeem",
+    "root": "ق-و-م",
+    "meaning": "Straight, upright, correct"
+  },
+  "صراط": {
+    "translation": "path",
+    "transliteration": "Sirat",
+    "root": "ص-ر-ط",
+    "meaning": "Path, way"
+  },
+  "الذين": {
+    "translation": "those who",
+    "transliteration": "Alladheen",
+    "root": "ا-ل-ذ",
+    "meaning": "Those who, the ones who"
+  },
+  "أنعمت": {
+    "translation": "You have blessed",
+    "transliteration": "An'amta",
+    "root": "ن-ع-م",
+    "meaning": "To bestow favor, bless"
+  },
+  "عليهم": {
+    "translation": "upon them",
+    "transliteration": "Alayhim",
+    "root": "ع-ل-ي",
+    "meaning": "Upon them, on them"
+  },
+  "غير": {
+    "translation": "not",
+    "transliteration": "Ghayr",
+    "root": "غ-ي-ر",
+    "meaning": "Other than, not"
+  },
+  "المغضوب": {
+    "translation": "those who earned wrath",
+    "transliteration": "Al-Maghdoob",
+    "root": "غ-ض-ب",
+    "meaning": "Those who incurred anger"
+  },
+  "الضالين": {
+    "translation": "those who went astray",
+    "transliteration": "Ad-Dalleen",
+    "root": "ض-ل-ل",
+    "meaning": "Those who are lost, astray"
+  },
+  "قل": {
+    "translation": "Say",
+    "transliteration": "Qul",
+    "root": "ق-و-ل",
+    "meaning": "To say, speak"
+  },
+  "هو": {
+    "translation": "He",
+    "transliteration": "Huwa",
+    "root": "ه-و-ا",
+    "meaning": "He, it"
+  },
+  "أحد": {
+    "translation": "One",
+    "transliteration": "Ahad",
+    "root": "و-ح-د",
+    "meaning": "One, unique"
+  },
+  "الصمد": {
+    "translation": "The Eternal",
+    "transliteration": "As-Samad",
+    "root": "ص-م-د",
+    "meaning": "The Eternal, Self-Sufficient"
+  },
+  "لم": {
+    "translation": "not",
+    "transliteration": "Lam",
+    "root": "ل-م",
+    "meaning": "Did not, has not"
+  },
+  "يلد": {
+    "translation": "beget",
+    "transliteration": "Yalid",
+    "root": "و-ل-د",
+    "meaning": "To give birth, beget"
+  },
+  "يولد": {
+    "translation": "was He begotten",
+    "transliteration": "Yoolad",
+    "root": "و-ل-د",
+    "meaning": "To be born"
+  },
+  "يكن": {
+    "translation": "there is",
+    "transliteration": "Yakun",
+    "root": "ك-و-ن",
+    "meaning": "To be, exist"
+  },
+  "له": {
+    "translation": "for Him",
+    "transliteration": "Lahu",
+    "root": "ل-ه",
+    "meaning": "For him, to him"
+  },
+  "كفوا": {
+    "translation": "equal",
+    "transliteration": "Kufuwan",
+    "root": "ك-ف-ا",
+    "meaning": "Equal, equivalent"
+  },
+  "أعوذ": {
+    "translation": "I seek refuge",
+    "transliteration": "A'oodhu",
+    "root": "ع-و-ذ",
+    "meaning": "To seek protection"
+  },
+  "برب": {
+    "translation": "in the Lord",
+    "transliteration": "Bi-Rabbi",
+    "root": "ر-ب-ب",
+    "meaning": "In the Lord of"
+  },
+  "الفلق": {
+    "translation": "the daybreak",
+    "transliteration": "Al-Falaq",
+    "root": "ف-ل-ق",
+    "meaning": "Dawn, daybreak"
+  },
+  "من": {
+    "translation": "from",
+    "transliteration": "Min",
+    "root": "م-ن",
+    "meaning": "From, of"
+  },
+  "شر": {
+    "translation": "evil",
+    "transliteration": "Sharr",
+    "root": "ش-ر-ر",
+    "meaning": "Evil, harm"
+  },
+  "ما": {
+    "translation": "what",
+    "transliteration": "Ma",
+    "root": "م-ا",
+    "meaning": "What, that which"
+  },
+  "خلق": {
+    "translation": "He created",
+    "transliteration": "Khalaq",
+    "root": "خ-ل-ق",
+    "meaning": "To create"
+  },
+  "غاسق": {
+    "translation": "darkness",
+    "transliteration": "Ghasiq",
+    "root": "غ-س-ق",
+    "meaning": "Darkness, night"
+  },
+  "إذا": {
+    "translation": "when",
+    "transliteration": "Idha",
+    "root": "ا-ذ-ا",
+    "meaning": "When, if"
+  },
+  "وقب": {
+    "translation": "it settles",
+    "transliteration": "Waqab",
+    "root": "و-ق-ب",
+    "meaning": "To penetrate, settle"
+  },
+  "النفاثات": {
+    "translation": "those who blow",
+    "transliteration": "An-Naffathat",
+    "root": "ن-ف-ث",
+    "meaning": "Those who blow (in knots)"
+  },
+  "في": {
+    "translation": "in",
+    "transliteration": "Fee",
+    "root": "ف-ي",
+    "meaning": "In, at"
+  },
+  "العقد": {
+    "translation": "the knots",
+    "transliteration": "Al-Uqad",
+    "root": "ع-ق-د",
+    "meaning": "Knots, contracts"
+  },
+  "حاسد": {
+    "translation": "envier",
+    "transliteration": "Hasid",
+    "root": "ح-س-د",
+    "meaning": "One who envies"
+  },
+  "حسد": {
+    "translation": "he envies",
+    "transliteration": "Hasad",
+    "root": "ح-س-د",
+    "meaning": "To envy"
+  },
+  "الناس": {
+    "translation": "mankind",
+    "transliteration": "An-Nas",
+    "root": "ن-و-س",
+    "meaning": "People, mankind"
+  },
+  "إله": {
+    "translation": "God",
+    "transliteration": "Ilah",
+    "root": "ا-ل-ه",
+    "meaning": "God, deity"
+  },
+  "الوسواس": {
+    "translation": "the whisperer",
+    "transliteration": "Al-Waswas",
+    "root": "و-س-و-س",
+    "meaning": "The whisperer, Satan"
+  },
+  "الخناس": {
+    "translation": "who withdraws",
+    "transliteration": "Al-Khannas",
+    "root": "خ-ن-س",
+    "meaning": "The one who withdraws"
+  },
+  "يوسوس": {
+    "translation": "whispers",
+    "transliteration": "Yuwaswis",
+    "root": "و-س-و-س",
+    "meaning": "To whisper"
+  },
+  "صدور": {
+    "translation": "hearts",
+    "transliteration": "Sudoor",
+    "root": "ص-د-ر",
+    "meaning": "Chests, hearts"
+  },
+  "الجنة": {
+    "translation": "the jinn",
+    "transliteration": "Al-Jinnah",
+    "root": "ج-ن-ن",
+    "meaning": "The jinn, hidden beings"
+  },
+  "محمد": {
+    "translation": "Muhammad",
+    "transliteration": "Muhammad",
+    "root": "ح-م-د",
+    "meaning": "The praised one, Prophet Muhammad"
+  },
+  "رسول": {
+    "translation": "messenger",
+    "transliteration": "Rasool",
+    "root": "ر-س-ل",
+    "meaning": "Messenger, apostle"
+  },
+  "نبي": {
+    "translation": "prophet",
+    "transliteration": "Nabiyy",
+    "root": "ن-ب-ا",
+    "meaning": "Prophet"
+  },
+  "كتاب": {
+    "translation": "book",
+    "transliteration": "Kitab",
+    "root": "ك-ت-ب",
+    "meaning": "Book, scripture"
+  },
+  "قرآن": {
+    "translation": "Quran",
+    "transliteration": "Quran",
+    "root": "ق-ر-ا",
+    "meaning": "The Quran, recitation"
+  },
+  "سنة": {
+    "translation": "Sunnah",
+    "transliteration": "Sunnah",
+    "root": "س-ن-ن",
+    "meaning": "Prophetic tradition, way"
+  },
+  "حديث": {
+    "translation": "hadith",
+    "transliteration": "Hadith",
+    "root": "ح-د-ث",
+    "meaning": "Prophetic saying, tradition"
+  },
+  "إسلام": {
+    "translation": "Islam",
+    "transliteration": "Islam",
+    "root": "س-ل-م",
+    "meaning": "Submission to Allah"
+  },
+  "مسلم": {
+    "translation": "Muslim",
+    "transliteration": "Muslim",
+    "root": "س-ل-م",
+    "meaning": "One who submits to Allah"
+  },
+  "إيمان": {
+    "translation": "faith",
+    "transliteration": "Iman",
+    "root": "ا-م-ن",
+    "meaning": "Faith, belief"
+  },
+  "مؤمن": {
+    "translation": "believer",
+    "transliteration": "Mu'min",
+    "root": "ا-م-ن",
+    "meaning": "One who believes"
+  },
+  "صلاة": {
+    "translation": "prayer",
+    "transliteration": "Salah",
+    "root": "ص-ل-و",
+    "meaning": "Prayer, worship"
+  },
+  "زكاة": {
+    "translation": "charity",
+    "transliteration": "Zakah",
+    "root": "ز-ك-و",
+    "meaning": "Obligatory charity"
+  },
+  "صوم": {
+    "translation": "fasting",
+    "transliteration": "Sawm",
+    "root": "ص-و-م",
+    "meaning": "Fasting"
+  },
+  "حج": {
+    "translation": "pilgrimage",
+    "transliteration": "Hajj",
+    "root": "ح-ج-ج",
+    "meaning": "Pilgrimage to Mecca"
+  },
+  "جنة": {
+    "translation": "paradise",
+    "transliteration": "Jannah",
+    "root": "ج-ن-ن",
+    "meaning": "Paradise, garden"
+  },
+  "نار": {
+    "translation": "fire",
+    "transliteration": "Nar",
+    "root": "ن-و-ر",
+    "meaning": "Fire, hellfire"
+  },
+  "توبة": {
+    "translation": "repentance",
+    "transliteration": "Tawbah",
+    "root": "ت-و-ب",
+    "meaning": "Repentance, turning back"
+  },
+  "رحمة": {
+    "translation": "mercy",
+    "transliteration": "Rahmah",
+    "root": "ر-ح-م",
+    "meaning": "Mercy, compassion"
+  },
+  "عذاب": {
+    "translation": "punishment",
+    "transliteration": "Adhab",
+    "root": "ع-ذ-ب",
+    "meaning": "Punishment, torment"
+  },
+  "هداية": {
+    "translation": "guidance",
+    "transliteration": "Hidayah",
+    "root": "ه-د-ي",
+    "meaning": "Guidance"
+  },
+  "ضلالة": {
+    "translation": "misguidance",
+    "transliteration": "Dalalah",
+    "root": "ض-ل-ل",
+    "meaning": "Misguidance, error"
+  }
+}

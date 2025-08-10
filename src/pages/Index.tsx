@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { Search, ChevronLeft, Menu, BookOpen, Facebook, Youtube, Twitter, Info, Mail } from "lucide-react"
+import { Search, ChevronLeft, Menu, BookOpen, Facebook, Youtube, Twitter, Info, Mail } from 'lucide-react'
 import { Switch } from "@/components/ui/switch"
 import BookReader from "@/components/BookReader"
 import ContactPage from "@/components/ContactPage"
@@ -25,6 +25,30 @@ interface Book {
   featured?: boolean
 }
 
+// Google Analytics 4 Configuration
+declare global {
+  interface Window {
+    dataLayer: any[];
+    gtag: (...args: any[]) => void;
+  }
+}
+
+// Initialize Google Analytics
+(function() {
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = 'https://www.googletagmanager.com/gtag/js?id=G-HN1BLRMQCS';
+  document.head.appendChild(script);
+
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function() {
+    window.dataLayer.push(arguments);
+  };
+
+  window.gtag('js', new Date());
+  window.gtag('config', 'G-HN1BLRMQCS');
+})();
+
 const Index = () => {
   const [books, setBooks] = useState<Book[]>([])
   const [selectedBook, setSelectedBook] = useState<Book | null>(null)
@@ -41,14 +65,168 @@ const Index = () => {
   const [featuredBooks, setFeaturedBooks] = useState<string[]>([])
   const [scrollPosition, setScrollPosition] = useState(0)
   const [currentPage, setCurrentPage] = useState<"home" | "contact" | "about">("home")
+  const [currentLanguage, setCurrentLanguage] = useState<"arabic" | "english" | "spanish" | "german" | "portuguese" | "urdu" | "turkish" | "bahasa">("english")
+  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   const mainContentRef = useRef<HTMLDivElement>(null)
 
-  // Google Analytics
+  // Language configurations with translations
+  const languageConfig = {
+    arabic: { 
+      code: 'ar', 
+      name: 'العربية', 
+      direction: 'rtl',
+      translations: {
+        searchPlaceholder: "البحث في الكتب...",
+        availableBooks: "الكتب المتاحة",
+        category: "التصنيف:",
+        noBooks: "لم يتم العثور على كتب للتصنيف أو البحث المحدد.",
+        showAllBooks: "عرض جميع الكتب",
+        byAuthor: "بقلم",
+        featured: "مميز",
+        home: "الرئيسية",
+        about: "عنا",
+        contact: "اتصل بنا",
+        language: "اللغة"
+      }
+    },
+    english: { 
+      code: 'en', 
+      name: 'English', 
+      direction: 'ltr',
+      translations: {
+        searchPlaceholder: "Search books...",
+        availableBooks: "Available Books",
+        category: "Category:",
+        noBooks: "No books found for the selected category or search term.",
+        showAllBooks: "Show all books",
+        byAuthor: "by",
+        featured: "Featured",
+        home: "Home",
+        about: "About",
+        contact: "Contact",
+        language: "Language"
+      }
+    },
+    spanish: { 
+      code: 'es', 
+      name: 'Español', 
+      direction: 'ltr',
+      translations: {
+        searchPlaceholder: "Buscar libros...",
+        availableBooks: "Libros Disponibles",
+        category: "Categoría:",
+        noBooks: "No se encontraron libros para la categoría o término de búsqueda seleccionado.",
+        showAllBooks: "Mostrar todos los libros",
+        byAuthor: "por",
+        featured: "Destacado",
+        home: "Inicio",
+        about: "Acerca de",
+        contact: "Contacto",
+        language: "Idioma"
+      }
+    },
+    german: { 
+      code: 'de', 
+      name: 'Deutsch', 
+      direction: 'ltr',
+      translations: {
+        searchPlaceholder: "Bücher suchen...",
+        availableBooks: "Verfügbare Bücher",
+        category: "Kategorie:",
+        noBooks: "Keine Bücher für die ausgewählte Kategorie oder den Suchbegriff gefunden.",
+        showAllBooks: "Alle Bücher anzeigen",
+        byAuthor: "von",
+        featured: "Empfohlen",
+        home: "Startseite",
+        about: "Über uns",
+        contact: "Kontakt",
+        language: "Sprache"
+      }
+    },
+    portuguese: { 
+      code: 'pt', 
+      name: 'Português', 
+      direction: 'ltr',
+      translations: {
+        searchPlaceholder: "Pesquisar livros...",
+        availableBooks: "Livros Disponíveis",
+        category: "Categoria:",
+        noBooks: "Nenhum livro encontrado para a categoria ou termo de pesquisa selecionado.",
+        showAllBooks: "Mostrar todos os livros",
+        byAuthor: "por",
+        featured: "Destaque",
+        home: "Início",
+        about: "Sobre",
+        contact: "Contato",
+        language: "Idioma"
+      }
+    },
+    urdu: { 
+      code: 'ur', 
+      name: 'اردو', 
+      direction: 'rtl',
+      translations: {
+        searchPlaceholder: "کتابیں تلاش کریں...",
+        availableBooks: "دستیاب کتابیں",
+        category: "قسم:",
+        noBooks: "منتخب کردہ قسم یا تلاش کی اصطلاح کے لیے کوئی کتاب نہیں ملی۔",
+        showAllBooks: "تمام کتابیں دکھائیں",
+        byAuthor: "بذریعہ",
+        featured: "نمایاں",
+        home: "گھر",
+        about: "ہمارے بارے میں",
+        contact: "رابطہ",
+        language: "زبان"
+      }
+    },
+    turkish: { 
+      code: 'tr', 
+      name: 'Türkçe', 
+      direction: 'ltr',
+      translations: {
+        searchPlaceholder: "Kitap ara...",
+        availableBooks: "Mevcut Kitaplar",
+        category: "Kategori:",
+        noBooks: "Seçilen kategori veya arama terimi için kitap bulunamadı.",
+        showAllBooks: "Tüm kitapları göster",
+        byAuthor: "tarafından",
+        featured: "Öne Çıkan",
+        home: "Ana Sayfa",
+        about: "Hakkında",
+        contact: "İletişim",
+        language: "Dil"
+      }
+    },
+    bahasa: { 
+      code: 'id', 
+      name: 'Bahasa', 
+      direction: 'ltr',
+      translations: {
+        searchPlaceholder: "Cari buku...",
+        availableBooks: "Buku Tersedia",
+        category: "Kategori:",
+        noBooks: "Tidak ada buku yang ditemukan untuk kategori atau istilah pencarian yang dipilih.",
+        showAllBooks: "Tampilkan semua buku",
+        byAuthor: "oleh",
+        featured: "Unggulan",
+        home: "Beranda",
+        about: "Tentang",
+        contact: "Kontak",
+        language: "Bahasa"
+      }
+    }
+  }
+
+  // Get current translations
+  const t = languageConfig[currentLanguage].translations
+  const isRTL = languageConfig[currentLanguage].direction === 'rtl'
+
+  // Google Analytics 4 setup
   useEffect(() => {
-    // Load Google Analytics
+    // Add GA4 script to head
     const script1 = document.createElement("script")
     script1.async = true
-    script1.src = "https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"
+    script1.src = "https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
     document.head.appendChild(script1)
 
     const script2 = document.createElement("script")
@@ -56,34 +234,63 @@ const Index = () => {
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'GA_MEASUREMENT_ID');
+      gtag('config', 'G-XXXXXXXXXX', {
+        page_title: 'Deen Mastery Library',
+        page_location: window.location.href,
+        custom_map: {
+          custom_parameter_1: 'session_id'
+        }
+      });
     `
     document.head.appendChild(script2)
 
-    // User flow tracking
-    const trackUserClick = (element: string, category: string) => {
-      if (typeof window.gtag !== "undefined") {
-        window.gtag("event", "click", {
-          event_category: category,
-          event_label: element,
-          custom_parameter: "user_flow",
-        })
-      }
-    }
+    // Track initial page load with session data
+    if (typeof window.gtag !== "undefined") {
+      window.gtag("event", "page_view", {
+        page_title: "Library Home",
+        page_location: window.location.href,
+        session_id: sessionId,
+        user_language: currentLanguage,
+        timestamp: new Date().toISOString()
+      })
 
-    // Add click tracking to document
-    document.addEventListener("click", (e) => {
-      const target = e.target as HTMLElement
-      if (target.closest("button")) {
-        trackUserClick(target.textContent || "button", "navigation")
-      }
-    })
+      window.gtag("event", "session_start", {
+        session_id: sessionId,
+        timestamp: new Date().toISOString()
+      })
+    }
 
     return () => {
       document.head.removeChild(script1)
       document.head.removeChild(script2)
     }
-  }, [])
+  }, [sessionId, currentLanguage])
+
+  // Enhanced user flow tracking
+  const trackUserFlow = (action: string, category: string, label?: string, value?: number, additionalData?: any) => {
+    if (window.gtag) {
+      window.gtag("event", action, {
+        event_category: category,
+        event_label: label,
+        value: value,
+        session_id: sessionId,
+        user_language: currentLanguage,
+        current_page: currentPage,
+        timestamp: new Date().toISOString(),
+        ...additionalData
+      })
+    }
+    
+    // Also log to console for debugging
+    console.log(`🔍 User Flow: ${action}`, {
+      category,
+      label,
+      value,
+      session_id: sessionId,
+      current_page: currentPage,
+      ...additionalData
+    })
+  }
 
   // Handle mobile back button
   useEffect(() => {
@@ -91,6 +298,7 @@ const Index = () => {
       if (selectedBook) {
         event.preventDefault()
         setSelectedBook(null)
+        trackUserFlow("back_button", "navigation", "mobile_back")
         return false
       }
     }
@@ -124,6 +332,7 @@ const Index = () => {
       try {
         setLoading(true)
         console.log("Loading books from manifest...")
+        trackUserFlow("data_load_start", "library", "books_loading")
 
         const response = await fetch("/epubs/manifest.json")
         if (!response.ok) {
@@ -154,8 +363,10 @@ const Index = () => {
 
         setBooks(transformedBooks)
         setLoading(false)
+        trackUserFlow("data_loaded", "library", "books_count", transformedBooks.length)
       } catch (error) {
         console.error("Failed to load books from manifest:", error)
+        trackUserFlow("error", "library", "failed_to_load_books", 0, { error: error.message })
         setLoading(false)
       }
     }
@@ -226,7 +437,7 @@ const Index = () => {
 
   // Filter books based on category and search - FIXED LOGIC
   useEffect(() => {
-    console.log("Filtering books - Category:", selectedCategory, "Search:", searchQuery, "Language:", showArabic)
+    console.log("Filtering books - Category:", selectedCategory, "Search:", searchQuery, "Language:", currentLanguage)
     let filtered = [...books]
 
     // Filter by category first
@@ -262,6 +473,7 @@ const Index = () => {
           book.category.toLowerCase().includes(query),
       )
       console.log("Books after search filter:", filtered.length)
+      trackUserFlow("search", "library", searchQuery, filtered.length)
     } else if (selectedCategory === "all") {
       // Only sort by featured books when showing all books and no search
       filtered = filtered.sort((a, b) => {
@@ -276,7 +488,7 @@ const Index = () => {
     }
 
     setFilteredBooks(filtered)
-  }, [searchQuery, selectedCategory, books, categories, featuredBooks, showArabic])
+  }, [searchQuery, selectedCategory, books, categories, featuredBooks, currentLanguage])
 
   // Filter categories based on search query
   const filteredCategories = categories.filter((category) =>
@@ -287,6 +499,11 @@ const Index = () => {
     console.log("Book selected for reading:", book)
     setSelectedBook(book)
     setShowSearchResults(false)
+    trackUserFlow("book_open", "reading", isRTL ? book.title_ar : book.title_en || book.title_ar, 0, {
+      book_id: book.id,
+      book_category: book.category,
+      scroll_position: scrollPosition
+    })
 
     // Push state for mobile back button handling
     window.history.pushState({ bookSelected: true }, "", window.location.href)
@@ -294,6 +511,7 @@ const Index = () => {
 
   const handleSearchFocus = () => {
     setShowSearchResults(true)
+    trackUserFlow("search_focus", "interaction", "search_bar")
   }
 
   const handleSearchBlur = () => {
@@ -303,10 +521,15 @@ const Index = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchQuery(value)
+    if (value.length > 2) {
+      trackUserFlow("search_input", "search", value, value.length)
+    }
   }
 
   const handleCloseReader = () => {
+    const bookTitle = selectedBook ? (isRTL ? selectedBook.title_ar : selectedBook.title_en || selectedBook.title_ar) : "unknown"
     setSelectedBook(null)
+    trackUserFlow("book_close", "reading", bookTitle)
     // Go back in history to handle mobile back button
     if (window.history.state?.bookSelected) {
       window.history.back()
@@ -315,12 +538,15 @@ const Index = () => {
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed)
+    trackUserFlow("sidebar_toggle", "interface", sidebarCollapsed ? "open" : "close")
   }
 
   const handleCategorySelect = (categoryId: string) => {
     console.log("Category selected:", categoryId)
     setSelectedCategory(categoryId)
     setSearchQuery("")
+    setCurrentPage("home")
+    trackUserFlow("category_select", "navigation", categoryId)
 
     if (selectedBook) {
       setSelectedBook(null)
@@ -340,12 +566,24 @@ const Index = () => {
   }
 
   const handlePageChange = (page: "home" | "contact" | "about") => {
+    const previousPage = currentPage
     setCurrentPage(page)
     setSelectedBook(null)
     setSearchQuery("")
+    trackUserFlow("page_view", "navigation", page, 0, { from_page: previousPage })
     if (isMobile) {
       setSidebarCollapsed(true)
     }
+  }
+
+  const handleLanguageChange = (language: keyof typeof languageConfig) => {
+    const previousLanguage = currentLanguage
+    setCurrentLanguage(language)
+    setShowArabic(language === "arabic" || language === "urdu")
+    trackUserFlow("language_change", "interface", language, 0, { 
+      from_language: previousLanguage,
+      to_language: language
+    })
   }
 
   // Show loading state
@@ -383,23 +621,29 @@ const Index = () => {
           <BookReader
             book={selectedBook}
             onClose={handleCloseReader}
-            showArabic={showArabic}
+            showArabic={isRTL}
             scrollPosition={scrollPosition}
+            onUserAction={trackUserFlow}
+            currentLanguage={currentLanguage}
           />
         ) : currentPage === "contact" ? (
           <ContactPage onBack={() => handlePageChange("home")} />
         ) : currentPage === "about" ? (
-          <AboutPage onBack={() => handlePageChange("home")} />
+          <AboutPage onBack={() => handlePageChange("home")} onCategorySelect={handleCategorySelect} />
         ) : (
           // Landing Page
           <div
             ref={mainContentRef}
             className="flex-1 flex flex-col items-center justify-start px-4 md:px-8 pt-8 md:pt-16 overflow-auto"
+            dir={isRTL ? "rtl" : "ltr"}
           >
             {/* Mobile Menu Button */}
             {isMobile && (
               <button
-                onClick={toggleSidebar}
+                onClick={() => {
+                  trackUserFlow("mobile_menu", "interface", "toggle")
+                  toggleSidebar()
+                }}
                 className="fixed top-4 right-4 z-50 p-2 bg-green-700 text-white rounded-lg shadow-lg"
                 style={{ touchAction: "manipulation" }}
               >
@@ -425,19 +669,19 @@ const Index = () => {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder={showArabic ? "البحث في الكتب..." : "Search books..."}
+                  placeholder={t.searchPlaceholder}
                   value={searchQuery}
                   onChange={handleSearchChange}
                   onFocus={handleSearchFocus}
                   onBlur={handleSearchBlur}
                   className={`w-full px-4 py-3 text-base md:text-lg border-2 border-amber-800 rounded-lg focus:outline-none focus:border-amber-600 bg-white ${
-                    showArabic ? "pr-12 pl-4 text-right" : "pl-4 pr-12 text-left"
+                    isRTL ? "pr-12 pl-4 text-right" : "pl-4 pr-12 text-left"
                   }`}
-                  dir={showArabic ? "rtl" : "ltr"}
+                  dir={isRTL ? "rtl" : "ltr"}
                 />
                 <Search
                   className={`absolute top-1/2 transform -translate-y-1/2 text-amber-600 w-5 h-5 ${
-                    showArabic ? "left-3" : "right-3"
+                    isRTL ? "left-3" : "right-3"
                   }`}
                 />
               </div>
@@ -449,21 +693,24 @@ const Index = () => {
                     filteredBooks.slice(0, 10).map((book, index) => (
                       <div
                         key={book.id || index}
-                        onClick={() => handleBookSelect(book)}
+                        onClick={() => {
+                          trackUserFlow("search_result_click", "interaction", book.title_ar, index)
+                          handleBookSelect(book)
+                        }}
                         className="px-4 py-3 hover:bg-amber-50 cursor-pointer border-b border-amber-200 last:border-b-0"
                       >
-                        <div className="font-medium text-amber-900" dir={showArabic ? "rtl" : "ltr"}>
-                          {showArabic ? book.title_ar : book.title_en}
+                        <div className="font-medium text-amber-900" dir={isRTL ? "rtl" : "ltr"}>
+                          {isRTL ? book.title_ar : book.title_en}
                         </div>
-                        <div className="text-sm text-amber-700" dir={showArabic ? "rtl" : "ltr"}>
-                          {showArabic ? `بقلم ${book.author_ar}` : `by ${book.author_en}`}
+                        <div className="text-sm text-amber-700" dir={isRTL ? "rtl" : "ltr"}>
+                          {isRTL ? `${t.byAuthor} ${book.author_ar}` : `${t.byAuthor} ${book.author_en}`}
                         </div>
                         <div className="text-xs text-amber-600 capitalize">{book.category}</div>
                       </div>
                     ))
                   ) : (
                     <div className="px-4 py-3 text-amber-600">
-                      {showArabic ? "لم يتم العثور على كتب" : "No books found"}
+                      {t.noBooks}
                     </div>
                   )}
                 </div>
@@ -474,25 +721,28 @@ const Index = () => {
             <div className="w-full max-w-6xl pb-16">
               <div className="text-center mb-6">
                 <h2 className="text-xl md:text-2xl font-bold text-amber-900">
-                  {showArabic ? `الكتب المتاحة (${filteredBooks.length})` : `Available Books (${filteredBooks.length})`}
+                  {`${t.availableBooks} (${filteredBooks.length})`}
                 </h2>
                 {selectedCategory !== "all" && (
                   <div className="text-base font-normal text-amber-700 mt-2">
-                    {showArabic ? "التصنيف:" : "Category:"}{" "}
+                    {t.category}{" "}
                     {categories.find((cat) => cat.id === selectedCategory)?.name}
                   </div>
                 )}
 
-                <div className="flex items-center justify-end gap-3 mt-4">
+                {/* Fixed Language Toggle - Always stays on right side */}
+                <div className="flex items-center justify-end gap-3 mt-4" dir="ltr">
                   <span className="text-sm text-amber-700">English</span>
                   <div className="relative">
                     <Switch
-                      checked={showArabic}
-                      onCheckedChange={setShowArabic}
+                      checked={isRTL}
+                      onCheckedChange={(checked) => {
+                        handleLanguageChange(checked ? "arabic" : "english")
+                      }}
                       className="data-[state=checked]:bg-amber-600"
                     />
                     <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-amber-600 font-medium">
-                      {showArabic ? "العربية" : "EN"}
+                      {isRTL ? "العربية" : "EN"}
                     </span>
                   </div>
                   <span className="text-sm text-amber-700">العربية</span>
@@ -509,28 +759,31 @@ const Index = () => {
                   return (
                     <div
                       key={book.id || index}
-                      onClick={() => handleBookSelect(book)}
+                      onClick={() => {
+                        trackUserFlow("book_card_click", "interaction", book.title_ar, index)
+                        handleBookSelect(book)
+                      }}
                       className={`bg-white border-2 rounded-lg p-3 md:p-4 hover:bg-amber-50 cursor-pointer transition-colors shadow-sm ${
                         isFeatured ? "border-amber-400 ring-2 ring-amber-200" : "border-amber-200"
                       }`}
                     >
                       {isFeatured && (
                         <div className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded mb-2 text-center font-medium">
-                          ⭐ Featured
+                          ⭐ {t.featured}
                         </div>
                       )}
 
                       <div className="font-medium text-amber-900 mb-2 text-sm md:text-base min-h-[2.5rem] flex items-start">
                         <div
                           className="leading-tight break-words w-full overflow-wrap-anywhere"
-                          dir={showArabic ? "rtl" : "ltr"}
+                          dir={isRTL ? "rtl" : "ltr"}
                         >
-                          {showArabic ? book.title_ar : book.title_en}
+                          {isRTL ? book.title_ar : book.title_en}
                         </div>
                       </div>
 
-                      <div className="text-xs md:text-sm text-amber-700 mb-2" dir={showArabic ? "rtl" : "ltr"}>
-                        {showArabic ? `بقلم ${book.author_ar}` : `by ${book.author_en}`}
+                      <div className="text-xs md:text-sm text-amber-700 mb-2" dir={isRTL ? "rtl" : "ltr"}>
+                        {isRTL ? `${t.byAuthor} ${book.author_ar}` : `${t.byAuthor} ${book.author_en}`}
                       </div>
 
                       <div className="flex justify-between items-center">
@@ -548,16 +801,17 @@ const Index = () => {
                 <div className="text-center mt-8">
                   <div className="text-6xl mb-4">📚</div>
                   <p className="text-amber-700 mb-4">
-                    {showArabic
-                      ? "لم يتم العثور على كتب للتصنيف أو البحث المحدد."
-                      : "No books found for the selected category or search term."}
+                    {t.noBooks}
                   </p>
                   {selectedCategory !== "all" && (
                     <button
-                      onClick={() => handleCategorySelect("all")}
+                      onClick={() => {
+                        trackUserFlow("show_all_books", "interaction", "no_results")
+                        handleCategorySelect("all")
+                      }}
                       className="mt-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 transition-colors"
                     >
-                      {showArabic ? "عرض جميع الكتب" : "Show all books"}
+                      {t.showAllBooks}
                     </button>
                   )}
                 </div>
@@ -567,7 +821,7 @@ const Index = () => {
         )}
       </div>
 
-      {/* Right Sidebar */}
+      {/* Right Sidebar (Fixed position regardless of RTL) */}
       <div
         className={`fixed right-0 top-0 h-full bg-green-700 text-white flex flex-col transition-all duration-300 z-40 ${
           sidebarCollapsed ? "w-16" : "w-80"
@@ -576,7 +830,7 @@ const Index = () => {
         {/* Sidebar Toggle Button */}
         <button
           onClick={toggleSidebar}
-          className="absolute -left-4 top-6 w-8 h-8 bg-green-600 rounded-full flex items-center justify-center hover:bg-green-500 transition-colors z-50"
+          className={`absolute -left-4 top-6 w-8 h-8 bg-green-600 rounded-full flex items-center justify-center hover:bg-green-500 transition-colors z-50`}
           style={{ touchAction: "manipulation" }}
         >
           <ChevronLeft className={`w-4 h-4 transition-transform ${sidebarCollapsed ? "" : "rotate-180"}`} />
@@ -597,41 +851,73 @@ const Index = () => {
         {/* Categories Section with Search */}
         {!sidebarCollapsed && (
           <div className="p-4 md:p-6 flex-1 overflow-y-auto">
+            {/* Language Selection */}
+            <div className="mb-6">
+              <h3 className="text-lg font-bold mb-3">{t.language} / اللغة</h3>
+              <div className="grid grid-cols-2 gap-1">
+                {Object.entries(languageConfig).map(([key, lang]) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      trackUserFlow("language_select", "interface", key)
+                      handleLanguageChange(key as keyof typeof languageConfig)
+                    }}
+                    className={`text-xs p-2 rounded transition-colors ${
+                      currentLanguage === key
+                        ? "bg-green-600 text-white"
+                        : "bg-green-800 hover:bg-green-600 text-green-100"
+                    }`}
+                  >
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Navigation Links */}
             <div className="mb-6">
               <h3 className="text-lg font-bold mb-3">Navigation</h3>
               <div className="space-y-2">
                 <button
-                  onClick={() => handlePageChange("home")}
+                  onClick={() => {
+                    trackUserFlow("nav_home", "navigation", "sidebar")
+                    handlePageChange("home")
+                  }}
                   className={`w-full text-left px-3 py-2 rounded text-sm hover:bg-green-600 transition-colors ${
                     currentPage === "home" ? "bg-green-600" : ""
                   }`}
                 >
                   <div className="flex items-center">
                     <BookOpen className="w-4 h-4 mr-2" />
-                    <span>Home</span>
+                    <span>{t.home}</span>
                   </div>
                 </button>
                 <button
-                  onClick={() => handlePageChange("about")}
+                  onClick={() => {
+                    trackUserFlow("nav_about", "navigation", "sidebar")
+                    handlePageChange("about")
+                  }}
                   className={`w-full text-left px-3 py-2 rounded text-sm hover:bg-green-600 transition-colors ${
                     currentPage === "about" ? "bg-green-600" : ""
                   }`}
                 >
                   <div className="flex items-center">
                     <Info className="w-4 h-4 mr-2" />
-                    <span>About Us</span>
+                    <span>{t.about}</span>
                   </div>
                 </button>
                 <button
-                  onClick={() => handlePageChange("contact")}
+                  onClick={() => {
+                    trackUserFlow("nav_contact", "navigation", "sidebar")
+                    handlePageChange("contact")
+                  }}
                   className={`w-full text-left px-3 py-2 rounded text-sm hover:bg-green-600 transition-colors ${
                     currentPage === "contact" ? "bg-green-600" : ""
                   }`}
                 >
                   <div className="flex items-center">
                     <Mail className="w-4 h-4 mr-2" />
-                    <span>Contact Us</span>
+                    <span>{t.contact}</span>
                   </div>
                 </button>
               </div>
@@ -651,21 +937,9 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Categories Header with Language Toggle */}
+            {/* Categories Header */}
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg md:text-xl font-bold">Filter by Category</h3>
-
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-green-200">EN</span>
-                <div className="relative">
-                  <Switch
-                    checked={showArabic}
-                    onCheckedChange={setShowArabic}
-                    className="data-[state=checked]:bg-green-800 data-[state=unchecked]:bg-green-600 scale-75"
-                  />
-                </div>
-                <span className="text-xs text-green-200">AR</span>
-              </div>
             </div>
 
             <div className="space-y-2">
@@ -686,6 +960,7 @@ const Index = () => {
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
+                      trackUserFlow("category_sidebar_select", "navigation", category.name)
                       handleCategorySelect(category.id)
                     }}
                     className={`w-full text-left px-3 py-3 rounded text-sm hover:bg-green-600 transition-colors ${
@@ -730,7 +1005,10 @@ const Index = () => {
           <div className="p-2 flex-1 overflow-y-auto">
             <div className="space-y-2">
               <button
-                onClick={() => handlePageChange("home")}
+                onClick={() => {
+                  trackUserFlow("nav_home_collapsed", "navigation", "sidebar")
+                  handlePageChange("home")
+                }}
                 className={`w-full p-3 rounded hover:bg-green-600 transition-colors ${
                   currentPage === "home" ? "bg-green-600" : ""
                 }`}
@@ -739,7 +1017,10 @@ const Index = () => {
                 <BookOpen className="w-5 h-5 mx-auto" />
               </button>
               <button
-                onClick={() => handlePageChange("about")}
+                onClick={() => {
+                  trackUserFlow("nav_about_collapsed", "navigation", "sidebar")
+                  handlePageChange("about")
+                }}
                 className={`w-full p-3 rounded hover:bg-green-600 transition-colors ${
                   currentPage === "about" ? "bg-green-600" : ""
                 }`}
@@ -748,7 +1029,10 @@ const Index = () => {
                 <Info className="w-5 h-5 mx-auto" />
               </button>
               <button
-                onClick={() => handlePageChange("contact")}
+                onClick={() => {
+                  trackUserFlow("nav_contact_collapsed", "navigation", "sidebar")
+                  handlePageChange("contact")
+                }}
                 className={`w-full p-3 rounded hover:bg-green-600 transition-colors ${
                   currentPage === "contact" ? "bg-green-600" : ""
                 }`}
@@ -762,6 +1046,7 @@ const Index = () => {
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
+                    trackUserFlow("category_collapsed_select", "navigation", category.name)
                     handleCategorySelect(category.id)
                   }}
                   className={`w-full p-3 rounded hover:bg-green-600 transition-colors ${
@@ -788,16 +1073,28 @@ const Index = () => {
             <>
               <div className="text-xs text-green-200 mb-3">Contact & Social Media</div>
               <div className="flex justify-between gap-2 mb-4">
-                <div className="w-16 h-8 bg-blue-600 rounded flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors">
+                <div 
+                  className="w-16 h-8 bg-blue-600 rounded flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors"
+                  onClick={() => trackUserFlow("social_click", "interaction", "facebook")}
+                >
                   <Facebook className="w-4 h-4" />
                 </div>
-                <div className="w-16 h-8 bg-red-600 rounded flex items-center justify-center cursor-pointer hover:bg-red-700 transition-colors">
+                <div 
+                  className="w-16 h-8 bg-red-600 rounded flex items-center justify-center cursor-pointer hover:bg-red-700 transition-colors"
+                  onClick={() => trackUserFlow("social_click", "interaction", "youtube")}
+                >
                   <Youtube className="w-4 h-4" />
                 </div>
-                <div className="w-16 h-8 bg-black rounded flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors">
+                <div 
+                  className="w-16 h-8 bg-black rounded flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors"
+                  onClick={() => trackUserFlow("social_click", "interaction", "twitter")}
+                >
                   <Twitter className="w-4 h-4" />
                 </div>
-                <div className="w-16 h-8 bg-sky-500 rounded flex items-center justify-center cursor-pointer hover:bg-sky-600 transition-colors">
+                <div 
+                  className="w-16 h-8 bg-sky-500 rounded flex items-center justify-center cursor-pointer hover:bg-sky-600 transition-colors"
+                  onClick={() => trackUserFlow("social_click", "interaction", "bluesky")}
+                >
                   <span className="text-xs font-bold">☁</span>
                 </div>
               </div>
@@ -814,24 +1111,28 @@ const Index = () => {
               <div
                 className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors mx-auto"
                 title="Facebook"
+                onClick={() => trackUserFlow("social_click_collapsed", "interaction", "facebook")}
               >
                 <Facebook className="w-4 h-4" />
               </div>
               <div
                 className="w-8 h-8 bg-red-600 rounded flex items-center justify-center cursor-pointer hover:bg-red-700 transition-colors mx-auto"
                 title="YouTube"
+                onClick={() => trackUserFlow("social_click_collapsed", "interaction", "youtube")}
               >
                 <Youtube className="w-4 h-4" />
               </div>
               <div
                 className="w-8 h-8 bg-black rounded flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors mx-auto"
                 title="Twitter"
+                onClick={() => trackUserFlow("social_click_collapsed", "interaction", "twitter")}
               >
                 <Twitter className="w-4 h-4" />
               </div>
               <div
                 className="w-8 h-8 bg-sky-500 rounded flex items-center justify-center cursor-pointer hover:bg-sky-600 transition-colors mx-auto"
                 title="Bluesky"
+                onClick={() => trackUserFlow("social_click_collapsed", "interaction", "bluesky")}
               >
                 <span className="text-xs font-bold">☁</span>
               </div>

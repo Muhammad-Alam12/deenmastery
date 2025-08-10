@@ -1,14 +1,22 @@
 "use client"
 
-import { ArrowLeft, BookOpen, Users, Globe, Heart, Award, Target, Languages, Shield, Zap } from "lucide-react"
+import { ArrowLeft, BookOpen, Users, Globe, Heart, Award, Target, Languages, Shield, Zap } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface AboutPageProps {
   onBack: () => void
+  onCategorySelect?: (category: string) => void
 }
 
-const AboutPage = ({ onBack }: AboutPageProps) => {
+const AboutPage = ({ onBack, onCategorySelect }: AboutPageProps) => {
+  const handleCategoryClick = (category: string) => {
+    if (onCategorySelect) {
+      onCategorySelect(category)
+      onBack() // Navigate back to home with the selected category
+    }
+  }
+
   return (
     <div className="min-h-screen bg-amber-50 flex flex-col">
       {/* Header */}
@@ -84,7 +92,7 @@ const AboutPage = ({ onBack }: AboutPageProps) => {
                   <span>a lifelong learner on a personal journey of growth,</span>
                 </li>
               </ul>
-              <p className="mt-4 font-medium text-amber-900">Deen Mastery is designed to meet your needs.</p>
+              <p className="mt-4 font-bold text-amber-900">Deen Mastery is designed to meet your needs.</p>
             </div>
           </div>
 
@@ -185,6 +193,25 @@ const AboutPage = ({ onBack }: AboutPageProps) => {
                   </p>
                 </CardContent>
               </Card>
+            </div>
+          </div>
+
+          {/* Browse Categories Section - FIXED */}
+          <div className="mb-12">
+            <h3 className="text-2xl font-bold text-amber-900 mb-6 text-center">Browse by Category</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                "Hadith", "Fiqh", "Tafsir", "Aqeedah", 
+                "Seerah", "Arabic Language", "Islamic History", "Miscellaneous"
+              ].map((category) => (
+                <button
+                  key={category}
+                  onClick={() => handleCategoryClick(category)}
+                  className="bg-white border border-amber-200 p-3 rounded-lg hover:bg-amber-50 hover:border-amber-300 transition-colors text-amber-800 font-medium text-sm"
+                >
+                  {category}
+                </button>
+              ))}
             </div>
           </div>
 
