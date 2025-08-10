@@ -26,12 +26,42 @@ interface Book {
 }
 
 // Google Analytics 4 Configuration
+// Google Analytics 4 + Microsoft Clarity Configuration
 declare global {
   interface Window {
     dataLayer: any[];
     gtag: (...args: any[]) => void;
+    clarity: (...args: any[]) => void;
   }
 }
+
+(function () {
+  // --- Google Analytics ---
+  const gaScript = document.createElement('script');
+  gaScript.async = true;
+  gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-HN1BLRMQCS';
+  document.head.appendChild(gaScript);
+
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () {
+    window.dataLayer.push(arguments);
+  };
+  window.gtag('js', new Date());
+  window.gtag('config', 'G-HN1BLRMQCS');
+
+  // --- Microsoft Clarity ---
+  (function (c, l, a, r, i, t, y) {
+    (c as any)[a] = (c as any)[a] || function () {
+      ((c as any)[a].q = (c as any)[a].q || []).push(arguments);
+    };
+    t = l.createElement(r) as HTMLScriptElement;
+    t.async = true;
+    t.src = 'https://www.clarity.ms/tag/' + i;
+    y = l.getElementsByTagName(r)[0];
+    y.parentNode!.insertBefore(t, y);
+  })(window, document, 'clarity', 'script', 'sshvac2tuu'); // <-- Your Clarity ID
+})();
+
 
 // Initialize Google Analytics
 (function() {
