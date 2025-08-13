@@ -3,8 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { Search, ChevronLeft, Menu, BookOpen, Facebook, Youtube, Twitter, Info, Mail } from 'lucide-react'
-import { Switch } from "@/components/ui/switch"
+import { Search, BookOpen, Facebook, Youtube, Twitter, Info, Mail, Home, Globe, X } from "lucide-react"
 import BookReader from "@/components/BookReader"
 import ContactPage from "@/components/ContactPage"
 import AboutPage from "@/components/AboutPage"
@@ -14,9 +13,27 @@ interface Book {
   author_ar: string
   title_en?: string
   author_en?: string
+  title_es?: string
+  author_es?: string
+  title_de?: string
+  author_de?: string
+  title_pt?: string
+  author_pt?: string
+  title_ur?: string
+  author_ur?: string
+  title_tr?: string
+  author_tr?: string
+  title_id?: string
+  author_id?: string
   filename: string
   filename_ar?: string
   filename_en?: string
+  filename_es?: string
+  filename_de?: string
+  filename_pt?: string
+  filename_ur?: string
+  filename_tr?: string
+  filename_id?: string
   coverText: string
   type: string
   source?: string
@@ -26,58 +43,12 @@ interface Book {
 }
 
 // Google Analytics 4 Configuration
-// Google Analytics 4 + Microsoft Clarity Configuration
 declare global {
   interface Window {
-    dataLayer: any[];
-    gtag: (...args: any[]) => void;
-    clarity: (...args: any[]) => void;
+    dataLayer: any[]
+    gtag: (...args: any[]) => void
   }
 }
-
-(function () {
-  // --- Google Analytics ---
-  const gaScript = document.createElement('script');
-  gaScript.async = true;
-  gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-HN1BLRMQCS';
-  document.head.appendChild(gaScript);
-
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = function () {
-    window.dataLayer.push(arguments);
-  };
-  window.gtag('js', new Date());
-  window.gtag('config', 'G-HN1BLRMQCS');
-
-  // --- Microsoft Clarity ---
-  (function (c, l, a, r, i, t, y) {
-    (c as any)[a] = (c as any)[a] || function () {
-      ((c as any)[a].q = (c as any)[a].q || []).push(arguments);
-    };
-    t = l.createElement(r) as HTMLScriptElement;
-    t.async = true;
-    t.src = 'https://www.clarity.ms/tag/' + i;
-    y = l.getElementsByTagName(r)[0];
-    y.parentNode!.insertBefore(t, y);
-  })(window, document, 'clarity', 'script', 'sshvac2tuu'); // <-- Your Clarity ID
-})();
-
-
-// Initialize Google Analytics
-(function() {
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = 'https://www.googletagmanager.com/gtag/js?id=G-HN1BLRMQCS';
-  document.head.appendChild(script);
-
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = function() {
-    window.dataLayer.push(arguments);
-  };
-
-  window.gtag('js', new Date());
-  window.gtag('config', 'G-HN1BLRMQCS');
-})();
 
 const Index = () => {
   const [books, setBooks] = useState<Book[]>([])
@@ -85,26 +56,26 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchResults, setShowSearchResults] = useState(false)
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([])
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [isMobile, setIsMobile] = useState(false)
   const [categories, setCategories] = useState<Array<{ id: string; name: string; icon: any }>>([])
   const [loading, setLoading] = useState(true)
-  const [showArabic, setShowArabic] = useState(false)
   const [categorySearchQuery, setCategorySearchQuery] = useState("")
   const [featuredBooks, setFeaturedBooks] = useState<string[]>([])
   const [scrollPosition, setScrollPosition] = useState(0)
   const [currentPage, setCurrentPage] = useState<"home" | "contact" | "about">("home")
-  const [currentLanguage, setCurrentLanguage] = useState<"arabic" | "english" | "spanish" | "german" | "portuguese" | "urdu" | "turkish" | "bahasa">("english")
+  const [currentLanguage, setCurrentLanguage] = useState<
+    "arabic" | "english" | "spanish" | "german" | "portuguese" | "urdu" | "turkish" | "bahasa"
+  >("english")
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   const mainContentRef = useRef<HTMLDivElement>(null)
 
-  // Language configurations with translations
+  // Language configurations with translations - NO RTL LAYOUT CHANGES
   const languageConfig = {
-    arabic: { 
-      code: 'ar', 
-      name: 'العربية', 
-      direction: 'rtl',
+    arabic: {
+      code: "ar",
+      name: "العربية",
       translations: {
         searchPlaceholder: "البحث في الكتب...",
         availableBooks: "الكتب المتاحة",
@@ -116,13 +87,20 @@ const Index = () => {
         home: "الرئيسية",
         about: "عنا",
         contact: "اتصل بنا",
-        language: "اللغة"
-      }
+        language: "اللغة",
+        browseCategories: "تصفح الفئات",
+        filterByCategory: "تصفية حسب الفئة",
+        contactSocialMedia: "التواصل ووسائل التواصل الاجتماعي",
+        contactInfo: "معلومات الاتصال",
+        email: "البريد الإلكتروني: contact@deenmastery.com",
+        knowledgeMadeAccessible: "المعرفة في متناول الجميع",
+        deenMastery: "إتقان الدين",
+        closeSidebar: "إغلاق الشريط الجانبي",
+      },
     },
-    english: { 
-      code: 'en', 
-      name: 'English', 
-      direction: 'ltr',
+    english: {
+      code: "en",
+      name: "English",
       translations: {
         searchPlaceholder: "Search books...",
         availableBooks: "Available Books",
@@ -134,13 +112,20 @@ const Index = () => {
         home: "Home",
         about: "About",
         contact: "Contact",
-        language: "Language"
-      }
+        language: "Language",
+        browseCategories: "Browse Categories",
+        filterByCategory: "Filter by Category",
+        contactSocialMedia: "Contact & Social Media",
+        contactInfo: "Contact Info",
+        email: "Email: contact@deenmastery.com",
+        knowledgeMadeAccessible: "Knowledge Made Accessible",
+        deenMastery: "Deen Mastery",
+        closeSidebar: "Close Sidebar",
+      },
     },
-    spanish: { 
-      code: 'es', 
-      name: 'Español', 
-      direction: 'ltr',
+    spanish: {
+      code: "es",
+      name: "Español",
       translations: {
         searchPlaceholder: "Buscar libros...",
         availableBooks: "Libros Disponibles",
@@ -152,13 +137,20 @@ const Index = () => {
         home: "Inicio",
         about: "Acerca de",
         contact: "Contacto",
-        language: "Idioma"
-      }
+        language: "Idioma",
+        browseCategories: "Explorar Categorías",
+        filterByCategory: "Filtrar por Categoría",
+        contactSocialMedia: "Contacto y Redes Sociales",
+        contactInfo: "Información de Contacto",
+        email: "Email: contact@deenmastery.com",
+        knowledgeMadeAccessible: "Conocimiento Accesible",
+        deenMastery: "Dominio del Din",
+        closeSidebar: "Cerrar Barra Lateral",
+      },
     },
-    german: { 
-      code: 'de', 
-      name: 'Deutsch', 
-      direction: 'ltr',
+    german: {
+      code: "de",
+      name: "Deutsch",
       translations: {
         searchPlaceholder: "Bücher suchen...",
         availableBooks: "Verfügbare Bücher",
@@ -170,13 +162,20 @@ const Index = () => {
         home: "Startseite",
         about: "Über uns",
         contact: "Kontakt",
-        language: "Sprache"
-      }
+        language: "Sprache",
+        browseCategories: "Kategorien durchsuchen",
+        filterByCategory: "Nach Kategorie filtern",
+        contactSocialMedia: "Kontakt & Social Media",
+        contactInfo: "Kontaktinformationen",
+        email: "E-Mail: contact@deenmastery.com",
+        knowledgeMadeAccessible: "Wissen Zugänglich Gemacht",
+        deenMastery: "Deen Meisterschaft",
+        closeSidebar: "Seitenleiste schließen",
+      },
     },
-    portuguese: { 
-      code: 'pt', 
-      name: 'Português', 
-      direction: 'ltr',
+    portuguese: {
+      code: "pt",
+      name: "Português",
       translations: {
         searchPlaceholder: "Pesquisar livros...",
         availableBooks: "Livros Disponíveis",
@@ -188,13 +187,20 @@ const Index = () => {
         home: "Início",
         about: "Sobre",
         contact: "Contato",
-        language: "Idioma"
-      }
+        language: "Idioma",
+        browseCategories: "Navegar por Categorias",
+        filterByCategory: "Filtrar por Categoria",
+        contactSocialMedia: "Contato e Redes Sociais",
+        contactInfo: "Informações de Contato",
+        email: "Email: contact@deenmastery.com",
+        knowledgeMadeAccessible: "Conhecimento Acessível",
+        deenMastery: "Domínio do Din",
+        closeSidebar: "Fechar Barra Lateral",
+      },
     },
-    urdu: { 
-      code: 'ur', 
-      name: 'اردو', 
-      direction: 'rtl',
+    urdu: {
+      code: "ur",
+      name: "اردو",
       translations: {
         searchPlaceholder: "کتابیں تلاش کریں...",
         availableBooks: "دستیاب کتابیں",
@@ -206,13 +212,20 @@ const Index = () => {
         home: "گھر",
         about: "ہمارے بارے میں",
         contact: "رابطہ",
-        language: "زبان"
-      }
+        language: "زبان",
+        browseCategories: "اقسام دیکھیں",
+        filterByCategory: "قسم کے ذریعے فلٹر کریں",
+        contactSocialMedia: "رابطہ اور سوشل میڈیا",
+        contactInfo: "رابطے کی معلومات",
+        email: "ای میل: contact@deenmastery.com",
+        knowledgeMadeAccessible: "علم کو قابل رسائی بنایا گیا",
+        deenMastery: "دین میں مہارت",
+        closeSidebar: "سائیڈ بار بند کریں",
+      },
     },
-    turkish: { 
-      code: 'tr', 
-      name: 'Türkçe', 
-      direction: 'ltr',
+    turkish: {
+      code: "tr",
+      name: "Türkçe",
       translations: {
         searchPlaceholder: "Kitap ara...",
         availableBooks: "Mevcut Kitaplar",
@@ -224,13 +237,20 @@ const Index = () => {
         home: "Ana Sayfa",
         about: "Hakkında",
         contact: "İletişim",
-        language: "Dil"
-      }
+        language: "Dil",
+        browseCategories: "Kategorilere Göz At",
+        filterByCategory: "Kategoriye Göre Filtrele",
+        contactSocialMedia: "İletişim ve Sosyal Medya",
+        contactInfo: "İletişim Bilgileri",
+        email: "E-posta: contact@deenmastery.com",
+        knowledgeMadeAccessible: "Bilgi Erişilebilir Kılındı",
+        deenMastery: "Din Ustalığı",
+        closeSidebar: "Kenar Çubuğunu Kapat",
+      },
     },
-    bahasa: { 
-      code: 'id', 
-      name: 'Bahasa', 
-      direction: 'ltr',
+    bahasa: {
+      code: "id",
+      name: "Bahasa",
       translations: {
         searchPlaceholder: "Cari buku...",
         availableBooks: "Buku Tersedia",
@@ -242,14 +262,21 @@ const Index = () => {
         home: "Beranda",
         about: "Tentang",
         contact: "Kontak",
-        language: "Bahasa"
-      }
-    }
+        language: "Bahasa",
+        browseCategories: "Jelajahi Kategori",
+        filterByCategory: "Filter berdasarkan Kategori",
+        contactSocialMedia: "Kontak & Media Sosial",
+        contactInfo: "Info Kontak",
+        email: "Email: contact@deenmastery.com",
+        knowledgeMadeAccessible: "Pengetahuan Dibuat Dapat Diakses",
+        deenMastery: "Penguasaan Din",
+        closeSidebar: "Tutup Sidebar",
+      },
+    },
   }
 
   // Get current translations
   const t = languageConfig[currentLanguage].translations
-  const isRTL = languageConfig[currentLanguage].direction === 'rtl'
 
   // Google Analytics 4 setup
   useEffect(() => {
@@ -281,12 +308,12 @@ const Index = () => {
         page_location: window.location.href,
         session_id: sessionId,
         user_language: currentLanguage,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
 
       window.gtag("event", "session_start", {
         session_id: sessionId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       })
     }
 
@@ -307,10 +334,10 @@ const Index = () => {
         user_language: currentLanguage,
         current_page: currentPage,
         timestamp: new Date().toISOString(),
-        ...additionalData
+        ...additionalData,
       })
     }
-    
+
     // Also log to console for debugging
     console.log(`🔍 User Flow: ${action}`, {
       category,
@@ -318,7 +345,7 @@ const Index = () => {
       value,
       session_id: sessionId,
       current_page: currentPage,
-      ...additionalData
+      ...additionalData,
     })
   }
 
@@ -378,9 +405,27 @@ const Index = () => {
           author_ar: book.author_ar || "مؤلف غير معروف",
           title_en: book.title_en || book.title_ar || "Unknown Title",
           author_en: book.author_en || book.author_ar || "Unknown Author",
+          title_es: book.title_es || book.title_en || book.title_ar,
+          author_es: book.author_es || book.author_en || book.author_ar,
+          title_de: book.title_de || book.title_en || book.title_ar,
+          author_de: book.author_de || book.author_en || book.author_ar,
+          title_pt: book.title_pt || book.title_en || book.title_ar,
+          author_pt: book.author_pt || book.author_en || book.author_ar,
+          title_ur: book.title_ur || book.title_ar,
+          author_ur: book.author_ur || book.author_ar,
+          title_tr: book.title_tr || book.title_en || book.title_ar,
+          author_tr: book.author_tr || book.author_en || book.author_ar,
+          title_id: book.title_id || book.title_en || book.title_ar,
+          author_id: book.author_id || book.author_en || book.author_ar,
           filename: book.filename || book.filename_ar || book.filename_en || "",
           filename_ar: book.filename_ar || book.filename,
           filename_en: book.filename_en || book.filename,
+          filename_es: book.filename_es || book.filename_en || book.filename,
+          filename_de: book.filename_de || book.filename_en || book.filename,
+          filename_pt: book.filename_pt || book.filename_en || book.filename,
+          filename_ur: book.filename_ur || book.filename_ar || book.filename,
+          filename_tr: book.filename_tr || book.filename_en || book.filename,
+          filename_id: book.filename_id || book.filename_en || book.filename,
           coverText: book.coverText || "كتاب",
           type: book.type || "epub",
           source: book.source || "local",
@@ -427,9 +472,6 @@ const Index = () => {
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
-      if (window.innerWidth < 768) {
-        setSidebarCollapsed(true)
-      }
     }
 
     checkMobile()
@@ -525,14 +567,84 @@ const Index = () => {
     category.name.toLowerCase().includes(categorySearchQuery.toLowerCase()),
   )
 
+  // Get book title and author based on current language
+  const getBookTitle = (book: Book) => {
+    switch (currentLanguage) {
+      case "arabic":
+        return book.title_ar
+      case "english":
+        return book.title_en || book.title_ar
+      case "spanish":
+        return book.title_es || book.title_en || book.title_ar
+      case "german":
+        return book.title_de || book.title_en || book.title_ar
+      case "portuguese":
+        return book.title_pt || book.title_en || book.title_ar
+      case "urdu":
+        return book.title_ur || book.title_ar
+      case "turkish":
+        return book.title_tr || book.title_en || book.title_ar
+      case "bahasa":
+        return book.title_id || book.title_en || book.title_ar
+      default:
+        return book.title_en || book.title_ar
+    }
+  }
+
+  const getBookAuthor = (book: Book) => {
+    switch (currentLanguage) {
+      case "arabic":
+        return book.author_ar
+      case "english":
+        return book.author_en || book.author_ar
+      case "spanish":
+        return book.author_es || book.author_en || book.author_ar
+      case "german":
+        return book.author_de || book.author_en || book.author_ar
+      case "portuguese":
+        return book.author_pt || book.author_en || book.author_ar
+      case "urdu":
+        return book.author_ur || book.author_ar
+      case "turkish":
+        return book.author_tr || book.author_en || book.author_ar
+      case "bahasa":
+        return book.author_id || book.author_en || book.author_ar
+      default:
+        return book.author_en || book.author_ar
+    }
+  }
+
+  const getBookFilename = (book: Book) => {
+    switch (currentLanguage) {
+      case "arabic":
+        return book.filename_ar || book.filename
+      case "english":
+        return book.filename_en || book.filename
+      case "spanish":
+        return book.filename_es || book.filename_en || book.filename
+      case "german":
+        return book.filename_de || book.filename_en || book.filename
+      case "portuguese":
+        return book.filename_pt || book.filename_en || book.filename
+      case "urdu":
+        return book.filename_ur || book.filename_ar || book.filename
+      case "turkish":
+        return book.filename_tr || book.filename_en || book.filename
+      case "bahasa":
+        return book.filename_id || book.filename_en || book.filename
+      default:
+        return book.filename_en || book.filename
+    }
+  }
+
   const handleBookSelect = (book: Book) => {
     console.log("Book selected for reading:", book)
     setSelectedBook(book)
     setShowSearchResults(false)
-    trackUserFlow("book_open", "reading", isRTL ? book.title_ar : book.title_en || book.title_ar, 0, {
+    trackUserFlow("book_open", "reading", getBookTitle(book), 0, {
       book_id: book.id,
       book_category: book.category,
-      scroll_position: scrollPosition
+      scroll_position: scrollPosition,
     })
 
     // Push state for mobile back button handling
@@ -557,7 +669,7 @@ const Index = () => {
   }
 
   const handleCloseReader = () => {
-    const bookTitle = selectedBook ? (isRTL ? selectedBook.title_ar : selectedBook.title_en || selectedBook.title_ar) : "unknown"
+    const bookTitle = selectedBook ? getBookTitle(selectedBook) : "unknown"
     setSelectedBook(null)
     trackUserFlow("book_close", "reading", bookTitle)
     // Go back in history to handle mobile back button
@@ -569,6 +681,11 @@ const Index = () => {
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed)
     trackUserFlow("sidebar_toggle", "interface", sidebarCollapsed ? "open" : "close")
+  }
+
+  const closeSidebar = () => {
+    setSidebarCollapsed(true)
+    trackUserFlow("sidebar_close", "interface", "close_button")
   }
 
   const handleCategorySelect = (categoryId: string) => {
@@ -609,10 +726,9 @@ const Index = () => {
   const handleLanguageChange = (language: keyof typeof languageConfig) => {
     const previousLanguage = currentLanguage
     setCurrentLanguage(language)
-    setShowArabic(language === "arabic" || language === "urdu")
-    trackUserFlow("language_change", "interface", language, 0, { 
+    trackUserFlow("language_change", "interface", language, 0, {
       from_language: previousLanguage,
-      to_language: language
+      to_language: language,
     })
   }
 
@@ -632,7 +748,126 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50 flex relative">
+    <div className="min-h-screen bg-amber-50 flex flex-col relative">
+      {/* Top Navigation Bar */}
+      <div className="bg-white shadow-sm border-b border-amber-200 p-4 z-40 sticky top-0">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden">
+              <img
+                src="/lovable-uploads/92c79d95-bbb5-40d0-9b0f-37bccec10dcd.png"
+                alt="Deen Mastery Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div className="text-left">
+              <h1 className="text-xl font-bold text-amber-900">{t.deenMastery}</h1>
+              <p className="text-xs text-amber-600">{t.knowledgeMadeAccessible}</p>
+            </div>
+          </div>
+
+          {/* Navigation Links - Desktop */}
+          <div className="hidden md:flex items-center space-x-6">
+            <button
+              onClick={() => handlePageChange("home")}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+                currentPage === "home"
+                  ? "bg-amber-100 text-amber-800 font-medium"
+                  : "text-gray-600 hover:text-amber-700 hover:bg-amber-50"
+              }`}
+            >
+              <Home className="w-4 h-4" />
+              <span>{t.home}</span>
+            </button>
+            <button
+              onClick={() => handlePageChange("about")}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+                currentPage === "about"
+                  ? "bg-amber-100 text-amber-800 font-medium"
+                  : "text-gray-600 hover:text-amber-700 hover:bg-amber-50"
+              }`}
+            >
+              <Info className="w-4 h-4" />
+              <span>{t.about}</span>
+            </button>
+            <button
+              onClick={() => handlePageChange("contact")}
+              className={`px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+                currentPage === "contact"
+                  ? "bg-amber-100 text-amber-800 font-medium"
+                  : "text-gray-600 hover:text-amber-700 hover:bg-amber-50"
+              }`}
+            >
+              <Mail className="w-4 h-4" />
+              <span>{t.contact}</span>
+            </button>
+          </div>
+
+          {/* Language Selector & Categories Button */}
+          <div className="flex items-center space-x-3">
+            {/* Language Dropdown */}
+            <div className="relative">
+              <select
+                value={currentLanguage}
+                onChange={(e) => handleLanguageChange(e.target.value as keyof typeof languageConfig)}
+                className="appearance-none bg-white border border-amber-200 rounded-lg px-3 py-2 pr-8 text-sm focus:outline-none focus:border-amber-500 min-w-[120px]"
+              >
+                {Object.entries(languageConfig).map(([key, lang]) => (
+                  <option key={key} value={key}>
+                    {lang.name}
+                  </option>
+                ))}
+              </select>
+              <Globe className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            </div>
+
+            {/* Categories Toggle Button */}
+            <button
+              onClick={toggleSidebar}
+              className="p-2 bg-green-700 text-white rounded-lg shadow-lg hover:bg-green-800 transition-colors"
+              title={t.browseCategories}
+            >
+              <BookOpen className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        <div className="md:hidden mt-4 flex space-x-2">
+          <button
+            onClick={() => handlePageChange("home")}
+            className={`flex-1 px-3 py-2 rounded-lg text-sm transition-colors ${
+              currentPage === "home"
+                ? "bg-amber-100 text-amber-800 font-medium"
+                : "text-gray-600 hover:text-amber-700 hover:bg-amber-50"
+            }`}
+          >
+            {t.home}
+          </button>
+          <button
+            onClick={() => handlePageChange("about")}
+            className={`flex-1 px-3 py-2 rounded-lg text-sm transition-colors ${
+              currentPage === "about"
+                ? "bg-amber-100 text-amber-800 font-medium"
+                : "text-gray-600 hover:text-amber-700 hover:bg-amber-50"
+            }`}
+          >
+            {t.about}
+          </button>
+          <button
+            onClick={() => handlePageChange("contact")}
+            className={`flex-1 px-3 py-2 rounded-lg text-sm transition-colors ${
+              currentPage === "contact"
+                ? "bg-amber-100 text-amber-800 font-medium"
+                : "text-gray-600 hover:text-amber-700 hover:bg-amber-50"
+            }`}
+          >
+            {t.contact}
+          </button>
+        </div>
+      </div>
+
       {/* Mobile Overlay */}
       {isMobile && !sidebarCollapsed && (
         <div
@@ -643,44 +878,32 @@ const Index = () => {
       )}
 
       {/* Main Content Area */}
-      <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? "mr-0" : isMobile ? "mr-0" : "mr-80"}`}
-      >
+      <div className="flex-1 flex">
         {selectedBook ? (
           // Book Reader Component
           <BookReader
             book={selectedBook}
             onClose={handleCloseReader}
-            showArabic={isRTL}
+            showArabic={currentLanguage === "arabic" || currentLanguage === "urdu"}
             scrollPosition={scrollPosition}
             onUserAction={trackUserFlow}
             currentLanguage={currentLanguage}
+            filename={getBookFilename(selectedBook)}
           />
         ) : currentPage === "contact" ? (
-          <ContactPage onBack={() => handlePageChange("home")} />
+          <ContactPage onBack={() => handlePageChange("home")} currentLanguage={currentLanguage} />
         ) : currentPage === "about" ? (
-          <AboutPage onBack={() => handlePageChange("home")} onCategorySelect={handleCategorySelect} />
+          <AboutPage
+            onBack={() => handlePageChange("home")}
+            onCategorySelect={handleCategorySelect}
+            currentLanguage={currentLanguage}
+          />
         ) : (
           // Landing Page
           <div
             ref={mainContentRef}
             className="flex-1 flex flex-col items-center justify-start px-4 md:px-8 pt-8 md:pt-16 overflow-auto"
-            dir={isRTL ? "rtl" : "ltr"}
           >
-            {/* Mobile Menu Button */}
-            {isMobile && (
-              <button
-                onClick={() => {
-                  trackUserFlow("mobile_menu", "interface", "toggle")
-                  toggleSidebar()
-                }}
-                className="fixed top-4 right-4 z-50 p-2 bg-green-700 text-white rounded-lg shadow-lg"
-                style={{ touchAction: "manipulation" }}
-              >
-                <Menu className="w-6 h-6" />
-              </button>
-            )}
-
             {/* Logo and Branding */}
             <div className="text-center mb-8 md:mb-12">
               <div className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 mb-4 md:mb-6">
@@ -690,8 +913,8 @@ const Index = () => {
                   className="w-full h-full object-contain"
                 />
               </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-amber-900 mb-2">Deen Mastery</h1>
-              <p className="text-amber-700 text-base md:text-lg italic">Knowledge Made Accessible</p>
+              <h1 className="text-4xl md:text-6xl font-bold text-amber-900 mb-2">{t.deenMastery}</h1>
+              <p className="text-amber-700 text-base md:text-lg italic">{t.knowledgeMadeAccessible}</p>
             </div>
 
             {/* Search Section */}
@@ -704,16 +927,9 @@ const Index = () => {
                   onChange={handleSearchChange}
                   onFocus={handleSearchFocus}
                   onBlur={handleSearchBlur}
-                  className={`w-full px-4 py-3 text-base md:text-lg border-2 border-amber-800 rounded-lg focus:outline-none focus:border-amber-600 bg-white ${
-                    isRTL ? "pr-12 pl-4 text-right" : "pl-4 pr-12 text-left"
-                  }`}
-                  dir={isRTL ? "rtl" : "ltr"}
+                  className="w-full px-4 py-3 text-base md:text-lg border-2 border-amber-800 rounded-lg focus:outline-none focus:border-amber-600 bg-white pl-4 pr-12 text-left"
                 />
-                <Search
-                  className={`absolute top-1/2 transform -translate-y-1/2 text-amber-600 w-5 h-5 ${
-                    isRTL ? "left-3" : "right-3"
-                  }`}
-                />
+                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-amber-600 w-5 h-5" />
               </div>
 
               {/* Search Results Dropdown */}
@@ -724,24 +940,20 @@ const Index = () => {
                       <div
                         key={book.id || index}
                         onClick={() => {
-                          trackUserFlow("search_result_click", "interaction", book.title_ar, index)
+                          trackUserFlow("search_result_click", "interaction", getBookTitle(book), index)
                           handleBookSelect(book)
                         }}
                         className="px-4 py-3 hover:bg-amber-50 cursor-pointer border-b border-amber-200 last:border-b-0"
                       >
-                        <div className="font-medium text-amber-900" dir={isRTL ? "rtl" : "ltr"}>
-                          {isRTL ? book.title_ar : book.title_en}
-                        </div>
-                        <div className="text-sm text-amber-700" dir={isRTL ? "rtl" : "ltr"}>
-                          {isRTL ? `${t.byAuthor} ${book.author_ar}` : `${t.byAuthor} ${book.author_en}`}
+                        <div className="font-medium text-amber-900">{getBookTitle(book)}</div>
+                        <div className="text-sm text-amber-700">
+                          {t.byAuthor} {getBookAuthor(book)}
                         </div>
                         <div className="text-xs text-amber-600 capitalize">{book.category}</div>
                       </div>
                     ))
                   ) : (
-                    <div className="px-4 py-3 text-amber-600">
-                      {t.noBooks}
-                    </div>
+                    <div className="px-4 py-3 text-amber-600">{t.noBooks}</div>
                   )}
                 </div>
               )}
@@ -755,28 +967,9 @@ const Index = () => {
                 </h2>
                 {selectedCategory !== "all" && (
                   <div className="text-base font-normal text-amber-700 mt-2">
-                    {t.category}{" "}
-                    {categories.find((cat) => cat.id === selectedCategory)?.name}
+                    {t.category} {categories.find((cat) => cat.id === selectedCategory)?.name}
                   </div>
                 )}
-
-                {/* Fixed Language Toggle - Always stays on right side */}
-                <div className="flex items-center justify-end gap-3 mt-4" dir="ltr">
-                  <span className="text-sm text-amber-700">English</span>
-                  <div className="relative">
-                    <Switch
-                      checked={isRTL}
-                      onCheckedChange={(checked) => {
-                        handleLanguageChange(checked ? "arabic" : "english")
-                      }}
-                      className="data-[state=checked]:bg-amber-600"
-                    />
-                    <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-amber-600 font-medium">
-                      {isRTL ? "العربية" : "EN"}
-                    </span>
-                  </div>
-                  <span className="text-sm text-amber-700">العربية</span>
-                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
@@ -790,7 +983,7 @@ const Index = () => {
                     <div
                       key={book.id || index}
                       onClick={() => {
-                        trackUserFlow("book_card_click", "interaction", book.title_ar, index)
+                        trackUserFlow("book_card_click", "interaction", getBookTitle(book), index)
                         handleBookSelect(book)
                       }}
                       className={`bg-white border-2 rounded-lg p-3 md:p-4 hover:bg-amber-50 cursor-pointer transition-colors shadow-sm ${
@@ -804,16 +997,13 @@ const Index = () => {
                       )}
 
                       <div className="font-medium text-amber-900 mb-2 text-sm md:text-base min-h-[2.5rem] flex items-start">
-                        <div
-                          className="leading-tight break-words w-full overflow-wrap-anywhere"
-                          dir={isRTL ? "rtl" : "ltr"}
-                        >
-                          {isRTL ? book.title_ar : book.title_en}
+                        <div className="leading-tight break-words w-full overflow-wrap-anywhere">
+                          {getBookTitle(book)}
                         </div>
                       </div>
 
-                      <div className="text-xs md:text-sm text-amber-700 mb-2" dir={isRTL ? "rtl" : "ltr"}>
-                        {isRTL ? `${t.byAuthor} ${book.author_ar}` : `${t.byAuthor} ${book.author_en}`}
+                      <div className="text-xs md:text-sm text-amber-700 mb-2">
+                        {t.byAuthor} {getBookAuthor(book)}
                       </div>
 
                       <div className="flex justify-between items-center">
@@ -830,9 +1020,7 @@ const Index = () => {
               {filteredBooks.length === 0 && !loading && (
                 <div className="text-center mt-8">
                   <div className="text-6xl mb-4">📚</div>
-                  <p className="text-amber-700 mb-4">
-                    {t.noBooks}
-                  </p>
+                  <p className="text-amber-700 mb-4">{t.noBooks}</p>
                   {selectedCategory !== "all" && (
                     <button
                       onClick={() => {
@@ -849,110 +1037,36 @@ const Index = () => {
             </div>
           </div>
         )}
-      </div>
 
-      {/* Right Sidebar (Fixed position regardless of RTL) */}
-      <div
-        className={`fixed right-0 top-0 h-full bg-green-700 text-white flex flex-col transition-all duration-300 z-40 ${
-          sidebarCollapsed ? "w-16" : "w-80"
-        } ${isMobile && sidebarCollapsed ? "translate-x-full" : ""}`}
-      >
-        {/* Sidebar Toggle Button */}
-        <button
-          onClick={toggleSidebar}
-          className={`absolute -left-4 top-6 w-8 h-8 bg-green-600 rounded-full flex items-center justify-center hover:bg-green-500 transition-colors z-50`}
-          style={{ touchAction: "manipulation" }}
+        {/* Categories Sidebar with smooth animations */}
+        <div
+          className={`fixed right-0 top-20 h-[calc(100vh-5rem)] bg-green-700 text-white flex flex-col transition-all duration-300 ease-in-out z-40 ${
+            sidebarCollapsed ? "w-0 overflow-hidden" : "w-80"
+          } ${isMobile && sidebarCollapsed ? "translate-x-full" : ""}`}
         >
-          <ChevronLeft className={`w-4 h-4 transition-transform ${sidebarCollapsed ? "" : "rotate-180"}`} />
-        </button>
-
-        {/* Sidebar Header */}
-        <div className={`p-4 md:p-6 border-b border-green-600 ${sidebarCollapsed ? "px-2" : ""}`}>
-          <div className="flex items-center justify-center w-12 h-12 bg-green-600 rounded mb-4">
-            <BookOpen className="w-6 h-6" />
+          {/* Sidebar Header with Close Button */}
+          <div className="p-4 md:p-6 border-b border-green-600">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <div className="flex items-center justify-center w-12 h-12 bg-green-600 rounded mr-3">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <div className="bg-white text-green-800 px-3 py-1 rounded text-sm font-medium">
+                  {t.browseCategories}
+                </div>
+              </div>
+              <button
+                onClick={closeSidebar}
+                className="p-2 hover:bg-green-600 rounded-lg transition-colors"
+                title={t.closeSidebar}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
-          {!sidebarCollapsed && (
-            <div className="bg-white text-green-800 px-3 py-1 rounded text-center text-sm font-medium">
-              Browse Categories
-            </div>
-          )}
-        </div>
 
-        {/* Categories Section with Search */}
-        {!sidebarCollapsed && (
+          {/* Categories Section with Search */}
           <div className="p-4 md:p-6 flex-1 overflow-y-auto">
-            {/* Language Selection */}
-            <div className="mb-6">
-              <h3 className="text-lg font-bold mb-3">{t.language} / اللغة</h3>
-              <div className="grid grid-cols-2 gap-1">
-                {Object.entries(languageConfig).map(([key, lang]) => (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      trackUserFlow("language_select", "interface", key)
-                      handleLanguageChange(key as keyof typeof languageConfig)
-                    }}
-                    className={`text-xs p-2 rounded transition-colors ${
-                      currentLanguage === key
-                        ? "bg-green-600 text-white"
-                        : "bg-green-800 hover:bg-green-600 text-green-100"
-                    }`}
-                  >
-                    {lang.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Navigation Links */}
-            <div className="mb-6">
-              <h3 className="text-lg font-bold mb-3">Navigation</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => {
-                    trackUserFlow("nav_home", "navigation", "sidebar")
-                    handlePageChange("home")
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded text-sm hover:bg-green-600 transition-colors ${
-                    currentPage === "home" ? "bg-green-600" : ""
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    <span>{t.home}</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => {
-                    trackUserFlow("nav_about", "navigation", "sidebar")
-                    handlePageChange("about")
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded text-sm hover:bg-green-600 transition-colors ${
-                    currentPage === "about" ? "bg-green-600" : ""
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <Info className="w-4 h-4 mr-2" />
-                    <span>{t.about}</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => {
-                    trackUserFlow("nav_contact", "navigation", "sidebar")
-                    handlePageChange("contact")
-                  }}
-                  className={`w-full text-left px-3 py-2 rounded text-sm hover:bg-green-600 transition-colors ${
-                    currentPage === "contact" ? "bg-green-600" : ""
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <Mail className="w-4 h-4 mr-2" />
-                    <span>{t.contact}</span>
-                  </div>
-                </button>
-              </div>
-            </div>
-
             {/* Category Search */}
             <div className="mb-4">
               <div className="relative">
@@ -969,7 +1083,7 @@ const Index = () => {
 
             {/* Categories Header */}
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg md:text-xl font-bold">Filter by Category</h3>
+              <h3 className="text-lg md:text-xl font-bold">{t.filterByCategory}</h3>
             </div>
 
             <div className="space-y-2">
@@ -1018,156 +1132,43 @@ const Index = () => {
             {filteredCategories.length === 0 && categorySearchQuery && (
               <div className="text-center text-green-200 mt-4">No categories found for "{categorySearchQuery}"</div>
             )}
-
-            <div className="mt-6">
-              <h3 className="text-lg md:text-xl font-bold mb-4">About</h3>
-              <p className="text-green-100 text-sm leading-relaxed">
-                This digital library offers carefully curated Islamic books and documents. Browse by category or use
-                search to find specific titles. All books are available in Arabic with English translations where
-                available.
-              </p>
-            </div>
           </div>
-        )}
 
-        {/* Collapsed Categories */}
-        {sidebarCollapsed && (
-          <div className="p-2 flex-1 overflow-y-auto">
-            <div className="space-y-2">
-              <button
-                onClick={() => {
-                  trackUserFlow("nav_home_collapsed", "navigation", "sidebar")
-                  handlePageChange("home")
-                }}
-                className={`w-full p-3 rounded hover:bg-green-600 transition-colors ${
-                  currentPage === "home" ? "bg-green-600" : ""
-                }`}
-                title="Home"
-              >
-                <BookOpen className="w-5 h-5 mx-auto" />
-              </button>
-              <button
-                onClick={() => {
-                  trackUserFlow("nav_about_collapsed", "navigation", "sidebar")
-                  handlePageChange("about")
-                }}
-                className={`w-full p-3 rounded hover:bg-green-600 transition-colors ${
-                  currentPage === "about" ? "bg-green-600" : ""
-                }`}
-                title="About Us"
-              >
-                <Info className="w-5 h-5 mx-auto" />
-              </button>
-              <button
-                onClick={() => {
-                  trackUserFlow("nav_contact_collapsed", "navigation", "sidebar")
-                  handlePageChange("contact")
-                }}
-                className={`w-full p-3 rounded hover:bg-green-600 transition-colors ${
-                  currentPage === "contact" ? "bg-green-600" : ""
-                }`}
-                title="Contact Us"
-              >
-                <Mail className="w-5 h-5 mx-auto" />
-              </button>
-              {categories.slice(0, 3).map((category) => (
-                <button
-                  key={category.id}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    trackUserFlow("category_collapsed_select", "navigation", category.name)
-                    handleCategorySelect(category.id)
-                  }}
-                  className={`w-full p-3 rounded hover:bg-green-600 transition-colors ${
-                    selectedCategory === category.id ? "bg-green-600" : ""
-                  }`}
-                  title={category.name}
-                  style={{
-                    WebkitTapHighlightColor: "transparent",
-                    WebkitUserSelect: "none",
-                    userSelect: "none",
-                    touchAction: "manipulation",
-                  }}
-                >
-                  <category.icon className="w-5 h-5 mx-auto pointer-events-none" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Contact & Social Media Links */}
-        <div className={`p-4 md:p-6 border-t border-green-600 ${sidebarCollapsed ? "px-2" : ""}`}>
-          {!sidebarCollapsed && (
-            <>
-              <div className="text-xs text-green-200 mb-3">Contact & Social Media</div>
-              <div className="flex justify-between gap-2 mb-4">
-                <div 
-                  className="w-16 h-8 bg-blue-600 rounded flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors"
-                  onClick={() => trackUserFlow("social_click", "interaction", "facebook")}
-                >
-                  <Facebook className="w-4 h-4" />
-                </div>
-                <div 
-                  className="w-16 h-8 bg-red-600 rounded flex items-center justify-center cursor-pointer hover:bg-red-700 transition-colors"
-                  onClick={() => trackUserFlow("social_click", "interaction", "youtube")}
-                >
-                  <Youtube className="w-4 h-4" />
-                </div>
-                <div 
-                  className="w-16 h-8 bg-black rounded flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors"
-                  onClick={() => trackUserFlow("social_click", "interaction", "twitter")}
-                >
-                  <Twitter className="w-4 h-4" />
-                </div>
-                <div 
-                  className="w-16 h-8 bg-sky-500 rounded flex items-center justify-center cursor-pointer hover:bg-sky-600 transition-colors"
-                  onClick={() => trackUserFlow("social_click", "interaction", "bluesky")}
-                >
-                  <span className="text-xs font-bold">☁</span>
-                </div>
-              </div>
-
-              <div className="p-3 bg-green-600 rounded">
-                <div className="text-xs text-green-200 mb-2">Contact Info</div>
-                <div className="text-xs text-white">Email: contact@deenmastery.com</div>
-              </div>
-            </>
-          )}
-
-          {sidebarCollapsed && (
-            <div className="space-y-2">
+          {/* Contact & Social Media Links */}
+          <div className="p-4 md:p-6 border-t border-green-600">
+            <div className="text-xs text-green-200 mb-3">{t.contactSocialMedia}</div>
+            <div className="flex justify-between gap-2 mb-4">
               <div
-                className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors mx-auto"
-                title="Facebook"
-                onClick={() => trackUserFlow("social_click_collapsed", "interaction", "facebook")}
+                className="w-16 h-8 bg-blue-600 rounded flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors"
+                onClick={() => trackUserFlow("social_click", "interaction", "facebook")}
               >
                 <Facebook className="w-4 h-4" />
               </div>
               <div
-                className="w-8 h-8 bg-red-600 rounded flex items-center justify-center cursor-pointer hover:bg-red-700 transition-colors mx-auto"
-                title="YouTube"
-                onClick={() => trackUserFlow("social_click_collapsed", "interaction", "youtube")}
+                className="w-16 h-8 bg-red-600 rounded flex items-center justify-center cursor-pointer hover:bg-red-700 transition-colors"
+                onClick={() => trackUserFlow("social_click", "interaction", "youtube")}
               >
                 <Youtube className="w-4 h-4" />
               </div>
               <div
-                className="w-8 h-8 bg-black rounded flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors mx-auto"
-                title="Twitter"
-                onClick={() => trackUserFlow("social_click_collapsed", "interaction", "twitter")}
+                className="w-16 h-8 bg-black rounded flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors"
+                onClick={() => trackUserFlow("social_click", "interaction", "twitter")}
               >
                 <Twitter className="w-4 h-4" />
               </div>
               <div
-                className="w-8 h-8 bg-sky-500 rounded flex items-center justify-center cursor-pointer hover:bg-sky-600 transition-colors mx-auto"
-                title="Bluesky"
-                onClick={() => trackUserFlow("social_click_collapsed", "interaction", "bluesky")}
+                className="w-16 h-8 bg-sky-500 rounded flex items-center justify-center cursor-pointer hover:bg-sky-600 transition-colors"
+                onClick={() => trackUserFlow("social_click", "interaction", "bluesky")}
               >
                 <span className="text-xs font-bold">☁</span>
               </div>
             </div>
-          )}
+
+            <div className="p-3 bg-green-600 rounded">
+              <div className="text-xs text-green-200 mb-2">{t.contactInfo}</div>
+              <div className="text-xs text-white">{t.email}</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

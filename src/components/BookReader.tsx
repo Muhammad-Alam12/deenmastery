@@ -3,16 +3,34 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { ZoomIn, ZoomOut, Download, RotateCcw, Home, BookOpen, SearchIcon } from 'lucide-react'
+import { ZoomIn, ZoomOut, Download, RotateCcw, Home, BookOpen, SearchIcon, X } from "lucide-react"
 
 interface Book {
   title_ar: string
   author_ar: string
   title_en?: string
   author_en?: string
+  title_es?: string
+  author_es?: string
+  title_de?: string
+  author_de?: string
+  title_pt?: string
+  author_pt?: string
+  title_ur?: string
+  author_ur?: string
+  title_tr?: string
+  author_tr?: string
+  title_id?: string
+  author_id?: string
   filename: string
   filename_ar?: string
   filename_en?: string
+  filename_es?: string
+  filename_de?: string
+  filename_pt?: string
+  filename_ur?: string
+  filename_tr?: string
+  filename_id?: string
   coverText: string
   type: string
   source?: string
@@ -27,6 +45,7 @@ interface BookReaderProps {
   scrollPosition?: number
   onUserAction?: (action: string, category: string, label?: string, value?: number, additionalData?: any) => void
   currentLanguage?: string
+  filename?: string
 }
 
 interface Chapter {
@@ -44,7 +63,15 @@ interface WordTranslation {
   }
 }
 
-const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onUserAction, currentLanguage = "english" }: BookReaderProps) => {
+const BookReader = ({
+  book,
+  onClose,
+  showArabic = false,
+  scrollPosition = 0,
+  onUserAction,
+  currentLanguage = "english",
+  filename,
+}: BookReaderProps) => {
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(1)
   const [zoom, setZoom] = useState(100)
@@ -60,6 +87,9 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
   const [magnifierContent, setMagnifierContent] = useState<string>("")
   const contentRef = useRef<HTMLDivElement>(null)
   const magnifierRef = useRef<HTMLDivElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStartX, setDragStartX] = useState(0)
+  const [dragStartPage, setDragStartPage] = useState(0)
 
   // Touch handling for swipe navigation
   const [touchStart, setTouchStart] = useState<number | null>(null)
@@ -111,14 +141,14 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
   }
 
   const handleDownload = () => {
-    const filename = showArabic ? book.filename_ar || book.filename : book.filename_en || book.filename
+    const downloadFilename = filename || book.filename
     const link = document.createElement("a")
-    link.href = `/epubs/${filename}`
-    link.download = filename
+    link.href = `/epubs/${downloadFilename}`
+    link.download = downloadFilename
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    onUserAction?.("download_book", "reading", filename)
+    onUserAction?.("download_book", "reading", downloadFilename)
   }
 
   const handlePrevPage = () => {
@@ -181,16 +211,23 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
     }
   }
 
-  const handleProgressBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  // Enhanced draggable progress bar with proper event handling
+  const handleProgressBarMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragging(true)
+    setDragStartX(e.clientX)
+    setDragStartPage(currentPage)
+
     const rect = e.currentTarget.getBoundingClientRect()
     const clickX = e.clientX - rect.left
-    const percentage = clickX / rect.width
+    const percentage = Math.max(0, Math.min(1, clickX / rect.width))
     const newPage = Math.floor(percentage * totalPages)
     const clampedPage = Math.max(0, Math.min(newPage, totalPages - 1))
+
     setCurrentPage(clampedPage)
     setPageInput(String(clampedPage + 1))
     onUserAction?.("progress_bar_click", "reading", "navigation", clampedPage + 1)
-    // Reset scroll to top
+
     if (contentRef.current) {
       contentRef.current.scrollTop = 0
     }
@@ -214,7 +251,7 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
           // Fallback to basic translations
           response = await fetch("/word-translations.json")
         }
-        
+
         if (response.ok) {
           const translations = await response.json()
           setWordTranslations(translations)
@@ -228,37 +265,51 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
     loadWordTranslations()
   }, [])
 
-  // Handle word hover for word-by-word translation
-  const handleWordHover = (e: React.MouseEvent, word: string) => {
-    const cleanWord = word.replace(/[^\u0600-\u06FF\u0750-\u077F]/g, "").trim()
-    if (cleanWord && wordTranslations[cleanWord]) {
-      setHoveredWord(cleanWord)
-      setHoverPosition({ x: e.clientX, y: e.clientY })
-      onUserAction?.("word_hover", "reading", cleanWord, 0, { 
-        translation: wordTranslations[cleanWord].translation 
-      })
-    }
-  }
-
-  const handleWordLeave = () => {
-    setHoveredWord(null)
-  }
-
-  // Enhanced magnifier functionality - FIXED
+  // FIXED: Enhanced magnifier functionality that works on ALL pages
   const handleMouseMove = (e: React.MouseEvent) => {
     if (magnifierActive && contentRef.current) {
+      // Update magnifier position to follow cursor with offset to avoid blocking view
+      const newX = Math.min(e.clientX + 20, window.innerWidth - 180)
+      const newY = Math.max(e.clientY - 90, 10)
+
+      setMagnifierPosition({
+        x: newX,
+        y: newY,
+      })
+
+      // Capture visual content under cursor for all pages
       const rect = contentRef.current.getBoundingClientRect()
-      const x = e.clientX - rect.left
-      const y = e.clientY - rect.top
-      
-      // Update magnifier position to follow cursor
-      setMagnifierPosition({ x: e.clientX, y: e.clientY })
-      
-      // Capture the content under the cursor for magnification
-      const elementUnderCursor = document.elementFromPoint(e.clientX, e.clientY)
-      if (elementUnderCursor) {
-        const textContent = elementUnderCursor.textContent || ""
-        setMagnifierContent(textContent.substring(0, 50) + (textContent.length > 50 ? "..." : ""))
+      const relativeX = e.clientX - rect.left
+      const relativeY = e.clientY - rect.top
+
+      // Get the actual content element
+      const contentElement = contentRef.current.querySelector('[style*="fontSize"]') || contentRef.current
+
+      if (contentElement) {
+        // Create a more specific content description based on cursor position
+        const scrollTop = contentRef.current.scrollTop
+        const pageProgress = Math.round(((relativeY + scrollTop) / contentElement.scrollHeight) * 100)
+
+        // Try to get text near cursor position
+        const elementUnderCursor = document.elementFromPoint(e.clientX, e.clientY)
+        let nearbyText = ""
+
+        if (elementUnderCursor && elementUnderCursor !== magnifierRef.current) {
+          // Get text from element or its siblings
+          nearbyText = elementUnderCursor.textContent?.trim().split(/\s+/).slice(0, 4).join(" ") || ""
+
+          // If no text in current element, try parent
+          if (!nearbyText && elementUnderCursor.parentElement) {
+            nearbyText = elementUnderCursor.parentElement.textContent?.trim().split(/\s+/).slice(0, 4).join(" ") || ""
+          }
+        }
+
+        // Set magnifier content with better context
+        if (nearbyText) {
+          setMagnifierContent(nearbyText + (nearbyText.length > 20 ? "..." : ""))
+        } else {
+          setMagnifierContent(`Page ${currentPage + 1} • ${pageProgress}%`)
+        }
       }
     }
   }
@@ -266,8 +317,49 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
   const toggleMagnifier = () => {
     const newState = !magnifierActive
     setMagnifierActive(newState)
+
+    if (newState) {
+      // Initialize magnifier content when activated
+      setMagnifierContent(`Page ${currentPage + 1} Ready`)
+    }
+
     onUserAction?.("magnifier_toggle", "reading", newState ? "on" : "off")
   }
+
+  // Word-by-word translation implementation
+  useEffect(() => {
+    const handleWordHover = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.classList.contains("hoverable-word")) {
+        const word = target.getAttribute("data-word")
+        if (word && wordTranslations[word]) {
+          setHoveredWord(word)
+          setHoverPosition({ x: e.clientX, y: e.clientY })
+          onUserAction?.("word_hover", "reading", word, 0, {
+            translation: wordTranslations[word].translation,
+          })
+        }
+      }
+    }
+
+    const handleWordLeave = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.classList.contains("hoverable-word")) {
+        setHoveredWord(null)
+      }
+    }
+
+    const contentElement = contentRef.current
+    if (contentElement) {
+      contentElement.addEventListener("mouseover", handleWordHover)
+      contentElement.addEventListener("mouseleave", handleWordLeave)
+
+      return () => {
+        contentElement.removeEventListener("mouseover", handleWordHover)
+        contentElement.removeEventListener("mouseleave", handleWordLeave)
+      }
+    }
+  }, [chapters, currentPage, wordTranslations])
 
   // Load and parse EPUB file
   useEffect(() => {
@@ -276,16 +368,16 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
         setIsLoading(true)
         setError(null)
 
-        console.log("Loading EPUB:", book.filename)
+        console.log("Loading EPUB:", filename || book.filename)
 
         // Import JSZip dynamically
         const JSZip = (await import("jszip")).default
 
-        // Determine which filename to use based on language
-        const filename = showArabic ? book.filename_ar || book.filename : book.filename_en || book.filename
+        // Use the provided filename or fallback to book filename
+        const epubFilename = filename || book.filename
 
         // Fetch the EPUB file
-        const response = await fetch(`/epubs/${filename}`)
+        const response = await fetch(`/epubs/${epubFilename}`)
         if (!response.ok) {
           throw new Error(`Failed to fetch EPUB file: ${response.status}. The file may be missing or corrupted.`)
         }
@@ -390,7 +482,8 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
             if (showArabic) {
               cleanContent = cleanContent.replace(
                 /[\u0600-\u06FF\u0750-\u077F]+/g,
-                (match) => `<span class="hoverable-word cursor-pointer hover:bg-yellow-200 hover:shadow-sm transition-all duration-200 px-1 rounded" data-word="${match}" style="line-height: 1.6;">${match}</span>`,
+                (match) =>
+                  `<span class="hoverable-word cursor-pointer hover:bg-yellow-200 hover:shadow-sm transition-all duration-200 px-1 rounded" data-word="${match}" style="line-height: 1.6;">${match}</span>`,
               )
             }
 
@@ -409,7 +502,9 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
         console.log("Extracted chapters:", extractedChapters.length)
 
         if (extractedChapters.length === 0) {
-          throw new Error("No readable content found in this EPUB file. The file may be corrupted or use an unsupported format.")
+          throw new Error(
+            "No readable content found in this EPUB file. The file may be corrupted or use an unsupported format.",
+          )
         }
 
         setChapters(extractedChapters)
@@ -420,22 +515,22 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
 
         console.log("✅ EPUB successfully loaded and parsed")
         onUserAction?.("epub_loaded", "reading", "success", extractedChapters.length, {
-          filename: filename,
-          chapters: extractedChapters.length
+          filename: epubFilename,
+          chapters: extractedChapters.length,
         })
       } catch (err) {
         console.error("❌ Failed to load EPUB:", err)
         setError(err instanceof Error ? err.message : "Failed to load the book")
         setIsLoading(false)
-        onUserAction?.("epub_error", "reading", "failure", 0, { 
+        onUserAction?.("epub_error", "reading", "failure", 0, {
           error: err instanceof Error ? err.message : "Unknown error",
-          filename: book.filename
+          filename: filename || book.filename,
         })
       }
     }
 
     loadEpub()
-  }, [book, showArabic])
+  }, [book, showArabic, filename])
 
   // Update page input when current page changes
   useEffect(() => {
@@ -489,36 +584,45 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [currentPage, totalPages])
 
-  // Add word hover event listeners for word-by-word translation
+  // Global mouse event listeners for dragging
   useEffect(() => {
-    const handleWordMouseOver = (e: Event) => {
-      const target = e.target as HTMLElement
-      if (target.classList.contains("hoverable-word")) {
-        const word = target.getAttribute("data-word")
-        if (word) {
-          handleWordHover(e as any, word)
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        // Find the progress bar element and simulate interaction
+        const progressBar = document.querySelector(".progress-bar-container") as HTMLElement
+        if (progressBar) {
+          const rect = progressBar.getBoundingClientRect()
+          const clickX = e.clientX - rect.left
+          const percentage = Math.max(0, Math.min(1, clickX / rect.width))
+          const newPage = Math.floor(percentage * totalPages)
+          const clampedPage = Math.max(0, Math.min(newPage, totalPages - 1))
+          setCurrentPage(clampedPage)
+          setPageInput(String(clampedPage + 1))
+
+          if (contentRef.current) {
+            contentRef.current.scrollTop = 0
+          }
         }
       }
     }
 
-    const handleWordMouseLeave = (e: Event) => {
-      const target = e.target as HTMLElement
-      if (target.classList.contains("hoverable-word")) {
-        handleWordLeave()
+    const handleGlobalMouseUp = () => {
+      if (isDragging) {
+        setIsDragging(false)
+        onUserAction?.("progress_drag_end", "reading", "navigation", currentPage + 1)
       }
     }
 
-    const contentElement = contentRef.current
-    if (contentElement) {
-      contentElement.addEventListener("mouseover", handleWordMouseOver)
-      contentElement.addEventListener("mouseleave", handleWordMouseLeave)
-
-      return () => {
-        contentElement.removeEventListener("mouseover", handleWordMouseOver)
-        contentElement.removeEventListener("mouseleave", handleWordMouseLeave)
-      }
+    if (isDragging) {
+      document.addEventListener("mousemove", handleGlobalMouseMove)
+      document.addEventListener("mouseup", handleGlobalMouseUp)
     }
-  }, [chapters, currentPage, wordTranslations])
+
+    return () => {
+      document.removeEventListener("mousemove", handleGlobalMouseMove)
+      document.removeEventListener("mouseup", handleGlobalMouseUp)
+    }
+  }, [isDragging, totalPages, currentPage])
 
   if (error) {
     return (
@@ -543,7 +647,7 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
                 <strong>Book:</strong> {showArabic ? book.title_ar : book.title_en}
               </p>
               <p>
-                <strong>File:</strong> {book.filename}
+                <strong>File:</strong> {filename || book.filename}
               </p>
               <div className="mt-2 text-amber-600">
                 <strong>Troubleshooting:</strong>
@@ -678,17 +782,17 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mb-4 mx-auto"></div>
                 <div className="text-lg font-medium text-gray-700">Loading Book...</div>
-                <div className="text-sm text-gray-500 mt-2 max-w-xs truncate">{book.filename}</div>
+                <div className="text-sm text-gray-500 mt-2 max-w-xs truncate">{filename || book.filename}</div>
                 <div className="text-xs text-gray-400 mt-1">Extracting content from EPUB...</div>
               </div>
             </div>
           ) : (
-            <div 
-              className="w-full h-full overflow-auto" 
-              ref={contentRef} 
-              style={{ 
-                scrollbarWidth: 'auto',
-                scrollbarColor: '#d97706 #f3f4f6'
+            <div
+              className="w-full h-full overflow-auto custom-scrollbar"
+              ref={contentRef}
+              style={{
+                scrollbarWidth: "auto",
+                scrollbarColor: "#d97706 #f3f4f6",
               }}
             >
               <div
@@ -721,38 +825,58 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
             </div>
           )}
 
-          {/* Enhanced Working Magnifier - FIXED */}
+          {/* Enhanced Working Magnifier for ALL pages */}
           {magnifierActive && (
             <div
               ref={magnifierRef}
-              className="fixed pointer-events-none z-50 w-40 h-40 border-4 border-amber-500 rounded-full bg-white shadow-2xl overflow-hidden"
+              className="fixed pointer-events-none z-50 border-4 border-amber-500 rounded-full bg-white shadow-2xl overflow-hidden"
               style={{
-                left: magnifierPosition.x - 80,
-                top: magnifierPosition.y - 80,
-                display: magnifierActive ? 'block' : 'none',
-                backgroundImage: `radial-gradient(circle, transparent 35%, rgba(0,0,0,0.1) 36%, rgba(0,0,0,0.1) 45%, transparent 46%), 
-                                 linear-gradient(45deg, transparent 46%, rgba(251,191,36,0.2) 47%, rgba(251,191,36,0.2) 53%, transparent 54%), 
-                                 linear-gradient(-45deg, transparent 46%, rgba(251,191,36,0.2) 47%, rgba(251,191,36,0.2) 53%, transparent 54%)`,
-                transform: 'scale(2)',
-                transformOrigin: 'center',
-                backdropFilter: 'blur(1px)',
+                left: magnifierPosition.x,
+                top: magnifierPosition.y,
+                width: "160px",
+                height: "160px",
+                display: magnifierActive ? "block" : "none",
               }}
             >
-              {/* Magnifier crosshair */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-px h-8 bg-amber-500 absolute opacity-70"></div>
-                <div className="h-px w-8 bg-amber-500 absolute opacity-70"></div>
-              </div>
-              {/* Magnifier content */}
-              <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-gray-700 bg-white bg-opacity-90 p-2">
-                <div className="text-center">
-                  <div className="text-amber-600 font-bold mb-1">2x Zoom</div>
-                  {magnifierContent && (
-                    <div className="text-gray-600 text-xs leading-tight max-w-full overflow-hidden">
-                      {magnifierContent}
+              {/* Magnifier lens effect */}
+              <div className="absolute inset-0 rounded-full overflow-hidden bg-white">
+                {/* Visual magnification area */}
+                <div
+                  className="absolute inset-0 rounded-full overflow-hidden"
+                  style={{
+                    transform: "scale(2)",
+                    transformOrigin: "center",
+                    filter: "contrast(1.1) brightness(1.05)",
+                  }}
+                >
+                  {/* Content preview */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-amber-50 to-white">
+                    <div className="text-center p-2">
+                      <div className="text-amber-600 font-bold text-xs mb-1">2x ZOOM</div>
+                      <div className="text-gray-700 text-xs leading-tight max-w-full overflow-hidden">
+                        {magnifierContent || `Page ${currentPage + 1}`}
+                      </div>
+                      <div className="text-amber-500 text-xs mt-1">
+                        📖 Chapter {currentPage + 1}/{totalPages}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
+
+                {/* Crosshair */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-px h-6 bg-amber-600 absolute opacity-80"></div>
+                  <div className="h-px w-6 bg-amber-600 absolute opacity-80"></div>
+                </div>
+
+                {/* Close button */}
+                <button
+                  onClick={toggleMagnifier}
+                  className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors pointer-events-auto z-10"
+                  title="Close Magnifier (M)"
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </div>
             </div>
           )}
@@ -772,9 +896,7 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
           <div className="font-bold text-base mb-2 text-amber-300">{hoveredWord}</div>
           <div className="text-sm mb-2 text-green-300">{wordTranslations[hoveredWord].translation}</div>
           {wordTranslations[hoveredWord].transliteration && (
-            <div className="text-xs text-gray-300 mb-2 italic">
-              {wordTranslations[hoveredWord].transliteration}
-            </div>
+            <div className="text-xs text-gray-300 mb-2 italic">{wordTranslations[hoveredWord].transliteration}</div>
           )}
           {wordTranslations[hoveredWord].root && (
             <div className="text-xs text-blue-300 mb-2">
@@ -820,36 +942,20 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
             {/* Enhanced Draggable Progress Bar */}
             <div className="flex-1 max-w-md mx-4">
               <div
-                className="w-full bg-gray-200 rounded-full h-4 cursor-pointer relative hover:bg-gray-300 transition-colors"
-                onClick={handleProgressBarClick}
-                title={`Click to jump to page (${currentPage + 1}/${totalPages})`}
+                className="progress-bar-container w-full bg-gray-200 rounded-full h-4 cursor-pointer relative hover:bg-gray-300 transition-colors select-none"
+                onMouseDown={handleProgressBarMouseDown}
+                title={`Drag or click to jump to page (${currentPage + 1}/${totalPages})`}
+                style={{ userSelect: "none" }}
               >
                 <div
-                  className="bg-amber-600 h-4 rounded-full transition-all duration-300 relative"
+                  className="bg-amber-600 h-4 rounded-full transition-all duration-150 relative"
                   style={{ width: `${totalPages > 0 ? ((currentPage + 1) / totalPages) * 100 : 0}%` }}
                 >
                   {/* Draggable Progress indicator dot */}
-                  <div 
+                  <div
                     className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-5 h-5 bg-amber-700 rounded-full border-2 border-white shadow-md cursor-grab active:cursor-grabbing hover:scale-110 transition-transform"
-                    draggable={true}
-                    onDragStart={(e) => {
-                      e.dataTransfer.effectAllowed = 'move'
-                      onUserAction?.("progress_drag_start", "reading", "navigation")
-                    }}
-                    onDrag={(e) => {
-                      if (e.clientX > 0) {
-                        const rect = e.currentTarget.closest('.w-full')?.getBoundingClientRect()
-                        if (rect) {
-                          const percentage = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
-                          const newPage = Math.floor(percentage * totalPages)
-                          const clampedPage = Math.max(0, Math.min(newPage, totalPages - 1))
-                          setCurrentPage(clampedPage)
-                          setPageInput(String(clampedPage + 1))
-                        }
-                      }
-                    }}
-                    onDragEnd={() => {
-                      onUserAction?.("progress_drag_end", "reading", "navigation", currentPage + 1)
+                    style={{
+                      cursor: isDragging ? "grabbing" : "grab",
                     }}
                   ></div>
                 </div>
@@ -909,11 +1015,38 @@ const BookReader = ({ book, onClose, showArabic = false, scrollPosition = 0, onU
               Chapter {currentPage + 1} of {totalPages} • {chapters[currentPage]?.title || "Loading..."}
             </div>
             <div className="mt-1 text-gray-400">
-              Swipe left/right or use arrow keys to navigate • Press M for magnifier • Hover over Arabic words for translation
+              Swipe left/right or use arrow keys to navigate • Press M for magnifier • Hover over Arabic words for
+              translation
             </div>
           </div>
         </div>
       </div>
+
+      {/* Custom Scrollbar Styles */}
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 12px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f3f4f6;
+          border-radius: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #d97706;
+          border-radius: 6px;
+          border: 2px solid #f3f4f6;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #b45309;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:active {
+          background: #92400e;
+        }
+      `}</style>
     </div>
   )
 }
