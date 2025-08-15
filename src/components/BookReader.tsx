@@ -537,6 +537,20 @@ const BookReader = ({
     setPageInput(String(currentPage + 1))
   }, [currentPage])
 
+  // FIXED: Force zoom application on all pages
+  useEffect(() => {
+    if (contentRef.current) {
+      // Apply zoom to all content elements
+      const contentElements = contentRef.current.querySelectorAll(".prose, .max-w-4xl, [dangerouslySetInnerHTML]")
+      contentElements.forEach((element) => {
+        const htmlElement = element as HTMLElement
+        htmlElement.style.fontSize = `${zoom}%`
+        htmlElement.style.transform = `scale(${zoom / 100})`
+        htmlElement.style.transformOrigin = showArabic ? "top right" : "top left"
+      })
+    }
+  }, [zoom, currentPage, chapters, showArabic])
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -799,22 +813,31 @@ const BookReader = ({
                 className="max-w-4xl mx-auto p-4 md:p-8 pb-16"
                 style={{
                   fontSize: `${zoom}%`,
+                  transform: `scale(${zoom / 100})`,
+                  transformOrigin: showArabic ? "top right" : "top left",
+                  width: `${10000 / zoom}%`,
                   direction: showArabic ? "rtl" : "ltr",
                   textAlign: showArabic ? "right" : "left",
                   fontFamily: showArabic ? "'Amiri', 'Noto Sans Arabic', Arial, sans-serif" : "Georgia, serif",
                   lineHeight: "1.8",
                 }}
+                key={`content-${currentPage}-${zoom}`} // Force re-render when page or zoom changes
               >
                 {chapters.length > 0 && (
                   <div>
-                    {/* Chapter Content */}
+                    {/* Chapter Content - FIXED: Ensure zoom applies to ALL pages */}
                     <div
                       className="prose prose-lg max-w-none text-gray-800"
                       style={{
+                        fontSize: `${zoom}%`,
+                        transform: `scale(${zoom / 100})`,
+                        transformOrigin: showArabic ? "top right" : "top left",
                         direction: showArabic ? "rtl" : "ltr",
                         textAlign: showArabic ? "right" : "left",
                         fontFamily: showArabic ? "'Amiri', 'Noto Sans Arabic', Arial, sans-serif" : "Georgia, serif",
+                        lineHeight: "1.8",
                       }}
+                      key={`chapter-${currentPage}-${zoom}`} // Force re-render when page or zoom changes
                       dangerouslySetInnerHTML={{
                         __html: chapters[currentPage]?.content || "",
                       }}
