@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { Search, BookOpen, Facebook, Youtube, Twitter, Info, Mail, Home, Globe, X } from "lucide-react"
 import BookReader from "@/components/BookReader"
 import ContactPage from "@/components/ContactPage"
@@ -54,8 +54,6 @@ const Index = () => {
   const [books, setBooks] = useState<Book[]>([])
   const [selectedBook, setSelectedBook] = useState<Book | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [showSearchResults, setShowSearchResults] = useState(false)
-  const [filteredBooks, setFilteredBooks] = useState<Book[]>([])
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [isMobile, setIsMobile] = useState(false)
@@ -70,8 +68,9 @@ const Index = () => {
   >("english")
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   const mainContentRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
-  // Language configurations with translations - NO RTL LAYOUT CHANGES
+  // Language configurations with translations
   const languageConfig = {
     arabic: {
       code: "ar",
@@ -96,6 +95,8 @@ const Index = () => {
         knowledgeMadeAccessible: "المعرفة في متناول الجميع",
         deenMastery: "إتقان الدين",
         closeSidebar: "إغلاق الشريط الجانبي",
+        searchingFor: "البحث عن:",
+        clearSearch: "مسح البحث",
       },
     },
     english: {
@@ -121,6 +122,8 @@ const Index = () => {
         knowledgeMadeAccessible: "Knowledge Made Accessible",
         deenMastery: "Deen Mastery",
         closeSidebar: "Close Sidebar",
+        searchingFor: "Searching for:",
+        clearSearch: "Clear Search",
       },
     },
     spanish: {
@@ -146,6 +149,8 @@ const Index = () => {
         knowledgeMadeAccessible: "Conocimiento Accesible",
         deenMastery: "Dominio del Din",
         closeSidebar: "Cerrar Barra Lateral",
+        searchingFor: "Buscando:",
+        clearSearch: "Limpiar Búsqueda",
       },
     },
     german: {
@@ -171,6 +176,8 @@ const Index = () => {
         knowledgeMadeAccessible: "Wissen Zugänglich Gemacht",
         deenMastery: "Deen Meisterschaft",
         closeSidebar: "Seitenleiste schließen",
+        searchingFor: "Suche nach:",
+        clearSearch: "Suche löschen",
       },
     },
     portuguese: {
@@ -196,6 +203,8 @@ const Index = () => {
         knowledgeMadeAccessible: "Conhecimento Acessível",
         deenMastery: "Domínio do Din",
         closeSidebar: "Fechar Barra Lateral",
+        searchingFor: "Procurando por:",
+        clearSearch: "Limpar Pesquisa",
       },
     },
     urdu: {
@@ -221,6 +230,8 @@ const Index = () => {
         knowledgeMadeAccessible: "علم کو قابل رسائی بنایا گیا",
         deenMastery: "دین میں مہارت",
         closeSidebar: "سائیڈ بار بند کریں",
+        searchingFor: "تلاش:",
+        clearSearch: "تلاش صاف کریں",
       },
     },
     turkish: {
@@ -246,6 +257,8 @@ const Index = () => {
         knowledgeMadeAccessible: "Bilgi Erişilebilir Kılındı",
         deenMastery: "Din Ustalığı",
         closeSidebar: "Kenar Çubuğunu Kapat",
+        searchingFor: "Aranıyor:",
+        clearSearch: "Aramayı Temizle",
       },
     },
     bahasa: {
@@ -271,6 +284,8 @@ const Index = () => {
         knowledgeMadeAccessible: "Pengetahuan Dibuat Dapat Diakses",
         deenMastery: "Penguasaan Din",
         closeSidebar: "Tutup Sidebar",
+        searchingFor: "Mencari:",
+        clearSearch: "Hapus Pencarian",
       },
     },
   }
@@ -280,7 +295,6 @@ const Index = () => {
 
   // Google Analytics 4 setup
   useEffect(() => {
-    // Add GA4 script to head
     const script1 = document.createElement("script")
     script1.async = true
     script1.src = "https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
@@ -301,7 +315,6 @@ const Index = () => {
     `
     document.head.appendChild(script2)
 
-    // Track initial page load with session data
     if (typeof window.gtag !== "undefined") {
       window.gtag("event", "page_view", {
         page_title: "Library Home",
@@ -338,7 +351,6 @@ const Index = () => {
       })
     }
 
-    // Also log to console for debugging
     console.log(`🔍 User Flow: ${action}`, {
       category,
       label,
@@ -375,7 +387,6 @@ const Index = () => {
         }
       } catch (error) {
         console.warn("Could not load featured books:", error)
-        // Fallback featured books
         setFeaturedBooks(["الورقة النحوية", "نواقض الإسلام", "المنظومة البيقونية", "أبناؤنا والصلاة"])
       }
     }
@@ -399,7 +410,6 @@ const Index = () => {
         const manifestBooks = await response.json()
         console.log("Loaded books from manifest:", manifestBooks.length)
 
-        // Transform the books to ensure consistent structure
         const transformedBooks: Book[] = manifestBooks.map((book: any, index: number) => ({
           title_ar: book.title_ar || "عنوان غير معروف",
           author_ar: book.author_ar || "مؤلف غير معروف",
@@ -435,7 +445,6 @@ const Index = () => {
         }))
 
         console.log("Transformed books:", transformedBooks.length)
-
         setBooks(transformedBooks)
         setLoading(false)
         trackUserFlow("data_loaded", "library", "books_count", transformedBooks.length)
@@ -507,66 +516,6 @@ const Index = () => {
     }
   }, [])
 
-  // Filter books based on category and search - FIXED LOGIC
-  useEffect(() => {
-    console.log("Filtering books - Category:", selectedCategory, "Search:", searchQuery, "Language:", currentLanguage)
-    let filtered = [...books]
-
-    // Filter by category first
-    if (selectedCategory !== "all") {
-      const categoryObj = categories.find((cat) => cat.id === selectedCategory)
-      const categoryName = categoryObj ? categoryObj.name : selectedCategory
-      console.log("Filtering by category:", categoryName)
-
-      filtered = filtered.filter((book) => {
-        // Exact matching with normalization
-        const bookCategory = book.category.trim()
-        const targetCategory = categoryName.trim()
-        const exactMatch = bookCategory.toLowerCase() === targetCategory.toLowerCase()
-
-        if (exactMatch) {
-          console.log("✅ Book matches category:", book.title_ar, "->", book.category)
-        }
-        return exactMatch
-      })
-
-      console.log("Books after category filter:", filtered.length)
-    }
-
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim()
-      filtered = filtered.filter(
-        (book) =>
-          book.title_ar.toLowerCase().includes(query) ||
-          book.author_ar.toLowerCase().includes(query) ||
-          (book.title_en && book.title_en.toLowerCase().includes(query)) ||
-          (book.author_en && book.author_en.toLowerCase().includes(query)) ||
-          book.category.toLowerCase().includes(query),
-      )
-      console.log("Books after search filter:", filtered.length)
-      trackUserFlow("search", "library", searchQuery, filtered.length)
-    } else if (selectedCategory === "all") {
-      // Only sort by featured books when showing all books and no search
-      filtered = filtered.sort((a, b) => {
-        const aIsFeatured = featuredBooks.some((title) => a.title_ar.includes(title))
-        const bIsFeatured = featuredBooks.some((title) => b.title_ar.includes(title))
-
-        if (aIsFeatured && !bIsFeatured) return -1
-        if (!aIsFeatured && bIsFeatured) return 1
-
-        return a.title_ar.localeCompare(b.title_ar, "ar")
-      })
-    }
-
-    setFilteredBooks(filtered)
-  }, [searchQuery, selectedCategory, books, categories, featuredBooks, currentLanguage])
-
-  // Filter categories based on search query
-  const filteredCategories = categories.filter((category) =>
-    category.name.toLowerCase().includes(categorySearchQuery.toLowerCase()),
-  )
-
   // Get book title and author based on current language
   const getBookTitle = (book: Book) => {
     switch (currentLanguage) {
@@ -637,42 +586,132 @@ const Index = () => {
     }
   }
 
+  // ROBUST FILTERING USING useMemo - This ensures the filtering always works
+  const filteredBooks = useMemo(() => {
+    if (books.length === 0) {
+      console.log("📚 No books loaded yet")
+      return []
+    }
+
+    console.log("🔍 FILTERING BOOKS:")
+    console.log("📊 Total books:", books.length)
+    console.log("🔍 Search query:", `"${searchQuery}"`)
+    console.log("📂 Selected category:", selectedCategory)
+
+    let result = [...books]
+
+    // Apply category filter first
+    if (selectedCategory !== "all") {
+      const categoryObj = categories.find((cat) => cat.id === selectedCategory)
+      const categoryName = categoryObj ? categoryObj.name : selectedCategory
+
+      result = result.filter((book) => {
+        const bookCategory = book.category.trim().toLowerCase()
+        const targetCategory = categoryName.trim().toLowerCase()
+        return bookCategory === targetCategory
+      })
+
+      console.log(`📂 After category filter (${categoryName}): ${result.length} books`)
+    }
+
+    // Apply search filter if there's a search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim()
+      console.log(`🔍 Applying search filter for: "${query}"`)
+
+      result = result.filter((book) => {
+        // Get current language title and author
+        const currentTitle = getBookTitle(book).toLowerCase()
+        const currentAuthor = getBookAuthor(book).toLowerCase()
+
+        // Also search in Arabic (original) title and author
+        const arabicTitle = book.title_ar.toLowerCase()
+        const arabicAuthor = book.author_ar.toLowerCase()
+
+        // Search in category
+        const category = book.category.toLowerCase()
+
+        // Check all possible matches
+        const titleMatch = currentTitle.includes(query)
+        const authorMatch = currentAuthor.includes(query)
+        const arabicTitleMatch = arabicTitle.includes(query)
+        const arabicAuthorMatch = arabicAuthor.includes(query)
+        const categoryMatch = category.includes(query)
+
+        const isMatch = titleMatch || authorMatch || arabicTitleMatch || arabicAuthorMatch || categoryMatch
+
+        if (isMatch) {
+          console.log(`✅ Match found: "${getBookTitle(book)}" by ${getBookAuthor(book)}`)
+        }
+
+        return isMatch
+      })
+
+      console.log(`🔍 After search filter: ${result.length} books`)
+
+      // Track search
+      if (typeof trackUserFlow === "function") {
+        trackUserFlow("search", "library", searchQuery, result.length)
+      }
+    } else if (selectedCategory === "all") {
+      // Sort by featured books when showing all books and no search
+      result = result.sort((a, b) => {
+        const aIsFeatured = featuredBooks.some((title) => a.title_ar.includes(title))
+        const bIsFeatured = featuredBooks.some((title) => b.title_ar.includes(title))
+
+        if (aIsFeatured && !bIsFeatured) return -1
+        if (!aIsFeatured && bIsFeatured) return 1
+
+        return a.title_ar.localeCompare(b.title_ar, "ar")
+      })
+    }
+
+    console.log(`📚 FINAL FILTERED RESULT: ${result.length} books`)
+    console.log(
+      "📚 First 3 filtered books:",
+      result.slice(0, 3).map((b) => getBookTitle(b)),
+    )
+
+    return result
+  }, [books, searchQuery, selectedCategory, categories, featuredBooks, currentLanguage])
+
+  // Filter categories based on search query
+  const filteredCategories = categories.filter((category) =>
+    category.name.toLowerCase().includes(categorySearchQuery.toLowerCase()),
+  )
+
   const handleBookSelect = (book: Book) => {
     console.log("Book selected for reading:", book)
     setSelectedBook(book)
-    setShowSearchResults(false)
     trackUserFlow("book_open", "reading", getBookTitle(book), 0, {
       book_id: book.id,
       book_category: book.category,
       scroll_position: scrollPosition,
     })
 
-    // Push state for mobile back button handling
     window.history.pushState({ bookSelected: true }, "", window.location.href)
-  }
-
-  const handleSearchFocus = () => {
-    setShowSearchResults(true)
-    trackUserFlow("search_focus", "interaction", "search_bar")
-  }
-
-  const handleSearchBlur = () => {
-    setTimeout(() => setShowSearchResults(false), 200)
   }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
+    console.log("🔍 Search input changed to:", `"${value}"`)
     setSearchQuery(value)
+
     if (value.length > 2) {
       trackUserFlow("search_input", "search", value, value.length)
     }
+  }
+
+  const clearSearch = () => {
+    console.log("🔍 Clearing search...")
+    setSearchQuery("")
+    trackUserFlow("search_clear", "interaction", "clear_button")
   }
 
   const handleCloseReader = () => {
     const bookTitle = selectedBook ? getBookTitle(selectedBook) : "unknown"
     setSelectedBook(null)
     trackUserFlow("book_close", "reading", bookTitle)
-    // Go back in history to handle mobile back button
     if (window.history.state?.bookSelected) {
       window.history.back()
     }
@@ -746,6 +785,13 @@ const Index = () => {
       </div>
     )
   }
+
+  // Debug info - shows current state
+  console.log("🎯 RENDER DEBUG:")
+  console.log("📊 Books total:", books.length)
+  console.log("📊 Filtered books:", filteredBooks.length)
+  console.log("🔍 Current search:", `"${searchQuery}"`)
+  console.log("📂 Current category:", selectedCategory)
 
   return (
     <div className="min-h-screen bg-amber-50 flex flex-col relative">
@@ -899,7 +945,7 @@ const Index = () => {
             currentLanguage={currentLanguage}
           />
         ) : (
-          // Landing Page
+          // Landing Page - FIXED TO USE useMemo filteredBooks
           <div
             ref={mainContentRef}
             className="flex-1 flex flex-col items-center justify-start px-4 md:px-8 pt-8 md:pt-16 overflow-auto"
@@ -918,48 +964,32 @@ const Index = () => {
             </div>
 
             {/* Search Section */}
-            <div className="relative w-full max-w-md mb-6 md:mb-8">
+            <div className="w-full max-w-md mb-6 md:mb-8">
               <div className="relative">
                 <input
+                  ref={searchInputRef}
                   type="text"
                   placeholder={t.searchPlaceholder}
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  onFocus={handleSearchFocus}
-                  onBlur={handleSearchBlur}
-                  className="w-full px-4 py-3 text-base md:text-lg border-2 border-amber-800 rounded-lg focus:outline-none focus:border-amber-600 bg-white pl-4 pr-12 text-left"
+                  className="w-full px-4 py-3 text-base md:text-lg border-2 border-amber-800 rounded-lg focus:outline-none focus:border-amber-600 bg-white pl-4 pr-20 text-left"
                 />
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-amber-600 w-5 h-5" />
-              </div>
-
-              {/* Search Results Dropdown */}
-              {showSearchResults && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-amber-800 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
-                  {filteredBooks.length > 0 ? (
-                    filteredBooks.slice(0, 10).map((book, index) => (
-                      <div
-                        key={book.id || index}
-                        onClick={() => {
-                          trackUserFlow("search_result_click", "interaction", getBookTitle(book), index)
-                          handleBookSelect(book)
-                        }}
-                        className="px-4 py-3 hover:bg-amber-50 cursor-pointer border-b border-amber-200 last:border-b-0"
-                      >
-                        <div className="font-medium text-amber-900">{getBookTitle(book)}</div>
-                        <div className="text-sm text-amber-700">
-                          {t.byAuthor} {getBookAuthor(book)}
-                        </div>
-                        <div className="text-xs text-amber-600 capitalize">{book.category}</div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="px-4 py-3 text-amber-600">{t.noBooks}</div>
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                  {searchQuery.trim() && (
+                    <button
+                      onClick={clearSearch}
+                      className="p-1 hover:bg-amber-100 rounded text-amber-600 transition-colors"
+                      title={t.clearSearch}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   )}
+                  <Search className="text-amber-600 w-5 h-5" />
                 </div>
-              )}
+              </div>
             </div>
 
-            {/* Available Books Section */}
+            {/* Available Books Section - NOW CORRECTLY USES useMemo filteredBooks */}
             <div className="w-full max-w-6xl pb-16">
               <div className="text-center mb-6">
                 <h2 className="text-xl md:text-2xl font-bold text-amber-900">
@@ -970,8 +1000,19 @@ const Index = () => {
                     {t.category} {categories.find((cat) => cat.id === selectedCategory)?.name}
                   </div>
                 )}
+                {searchQuery.trim() && (
+                  <div className="text-sm text-amber-600 mt-2 flex items-center justify-center space-x-2">
+                    <span>
+                      {t.searchingFor} "{searchQuery}"
+                    </span>
+                    <button onClick={clearSearch} className="text-amber-800 hover:text-amber-900 underline text-xs">
+                      {t.clearSearch}
+                    </button>
+                  </div>
+                )}
               </div>
 
+              {/* BOOKS GRID - This now uses the useMemo filteredBooks which is guaranteed to work */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                 {filteredBooks.map((book, index) => {
                   const isFeatured =
@@ -981,7 +1022,7 @@ const Index = () => {
 
                   return (
                     <div
-                      key={book.id || index}
+                      key={`${book.id}-${index}`}
                       onClick={() => {
                         trackUserFlow("book_card_click", "interaction", getBookTitle(book), index)
                         handleBookSelect(book)
@@ -1021,11 +1062,12 @@ const Index = () => {
                 <div className="text-center mt-8">
                   <div className="text-6xl mb-4">📚</div>
                   <p className="text-amber-700 mb-4">{t.noBooks}</p>
-                  {selectedCategory !== "all" && (
+                  {(selectedCategory !== "all" || searchQuery.trim()) && (
                     <button
                       onClick={() => {
                         trackUserFlow("show_all_books", "interaction", "no_results")
                         handleCategorySelect("all")
+                        setSearchQuery("")
                       }}
                       className="mt-2 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 transition-colors"
                     >
@@ -1038,7 +1080,7 @@ const Index = () => {
           </div>
         )}
 
-        {/* Categories Sidebar with smooth animations */}
+        {/* Categories Sidebar */}
         <div
           className={`fixed right-0 top-20 h-[calc(100vh-5rem)] bg-green-700 text-white flex flex-col transition-all duration-300 ease-in-out z-40 ${
             sidebarCollapsed ? "w-0 overflow-hidden" : "w-80"
@@ -1088,7 +1130,6 @@ const Index = () => {
 
             <div className="space-y-2">
               {filteredCategories.map((category) => {
-                // Count books in this category with exact matching
                 const bookCount =
                   category.id === "all"
                     ? books.length
